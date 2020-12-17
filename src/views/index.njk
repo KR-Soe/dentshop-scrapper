@@ -1,11 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dentshop admin</title>
-</head>
-<body>
-    <p>hello world</p>
-</body>
-</html>
+{% extends "base.njk" %}
+
+{% block css %}
+<style>
+    .form--is-login {
+        width: 50%;
+        margin: auto;
+        padding: 1em;
+    }
+</style>
+{% endblock %}
+
+{% block js %}
+<script defer src="/public/js/login.js"></script>
+{% endblock %}
+
+{% block content %}
+    <form id="form" class="form form--is-login">
+        <div class="field">
+            <label class="label">Usuario</label>
+            <div class="control">
+                <input id="username" type="text" class="input" />
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">Clave</label>
+            <div class="control">
+                <input id="password" type="password" class="input" />
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <input type="submit" class="button is-primary" value="Ingresar" />
+            </div>
+        </div>
+    </form>
+{% endblock %}

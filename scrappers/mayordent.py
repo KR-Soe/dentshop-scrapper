@@ -7,9 +7,8 @@ from utils.connection import make_mongo_conn
 class Mayordent(scrapy.Spider):
     name = 'mayordent'
 
-    with open('./inputs/mayordent.json', 'r') as file:
+    with open('./scrappers/inputs/mayordent.json', 'r') as file:
         start_urls = json.loads(file.read())
-
 
     def parse(self, response):
         self.connection = make_mongo_conn()

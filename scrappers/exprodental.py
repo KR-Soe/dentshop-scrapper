@@ -9,10 +9,9 @@ class Exprodental(scrapy.Spider):
     name = 'exprodental'
 
     def start_requests(self):
-        self.products = []
         self.connection = make_mongo_conn()
 
-        with open('./inputs/exprodental.json', 'r') as file:
+        with open('./scrappers/inputs/exprodental.json', 'r') as file:
             urls = json.loads(file.read())
 
         for url in urls:

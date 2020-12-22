@@ -1,0 +1,25 @@
+{% extends "base.njk" %}
+
+{% block css %}
+<style>
+    .form {
+        width: 60%;
+        margin: auto;
+        padding: 1em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <form class="form" action="/api/csv" enctype="multipart/form-data" method="post">
+            <div class="field">
+                <label class="label" for="file">Subir archivo CSV</label>
+                <input id="file" name="jumpseller" type="file" />
+            </div>
+            <div class="field">
+                <input type="submit" class="button is-primary" value="Subir" />
+            </div>
+        </form>
+    </div>
+{% endblock %}

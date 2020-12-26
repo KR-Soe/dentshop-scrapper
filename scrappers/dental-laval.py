@@ -19,10 +19,9 @@ class DentalLaval(scrapy.Spider):
 
     def parse(self, response):
         self.connection = make_mongo_conn()
-        total_pages = response.css('.pagination > .page > a::text').getall()
-        last_page = len(total_pages)
-
-        for page in total_pages[last_page-1]:
+        last_page = int(response.css('.page > a::text').getall()[-1])
+        for page in range(last_page):
+            print('page number', page+1 , 'of', last_page)
             base_url = 'https://www.dental-laval.cl/'
             item = response.css('.grid__item.small--one-half.medium-up--one-fifth > a[href]::attr(href)').getall()
             for link in item:
@@ -32,34 +31,33 @@ class DentalLaval(scrapy.Spider):
 
     def _parse_detail(self, response):
         data = re.findall('theme.strings =(.+?);\n', response.body.decode('utf-8'), re.S)
-        OBJECT_DETAILS = {
-            'STOCK': 0
-        }
         if data:
             details = data[0]
+            pattern = r'(href=.+)'
+            details_fixed = re.sub(pattern, '",', details)
+            details = re.sub(r'(\w+):', lambda x: '"%s":' % x.group(1), details_fixed)
+            details = json.loads(details)
 
-        print(details)
         product_title = response.css('.product-single__title::text').get()
         normal_price = self._get_number(response.css('.product-single__price::text').get())
-        stock = self._get_number(details[OBJECT_DETAILS['STOCK']])
+        stock = self._get_number(details['stockAvailable'])
         internet_price = normal_price
-        # sku = response.css('.sku_wrapper > .sku::text').get()
-        category = response.css('.posted_in > a::text').getall()
-        # image = response.css('.wp-post-image.thb-ignore-lazyload::attr(src)').get()
-        # del category[0]
+        sku = response.css('#ProductSelect-product-template > option::attr(value)').get()
+        category = response.css('.h1.return-link::text').extract()[1].strip().split('Volver a')[1]
+        image = response.css('#ProductPhotoImg-product-template::attr(src)').get()
 
-        # output = {
-        #     'title': product_title,
-        #     'internetPrice': int(internet_price, 10),
-        #     'normalPrice': int(normal_price, 10),
-        #     'stock': int(stock, 10),
-        #     'sku': sku,
-        #     'category': category,
-        #     'image': image,
-        #     'referUrl': response.url
-        # }
-
-        # self.connection.dentshop.mayordent.insert_one(output)
+        output = {
+            'title': product_title,
+            'internetPrice': int(internet_price, 10),
+            'normalPrice': int(normal_price, 10),
+            'stock': int(stock, 10),
+            'sku': sku,
+            'category': category.strip(),
+            'image': image,
+            'referUrl': response.url
+        }
+        self.connection.dentshop.dentallaval.insert_one(output)
+        print('inserted')
 
 
     def _get_number(self, text):

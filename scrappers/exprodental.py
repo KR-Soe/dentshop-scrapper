@@ -13,7 +13,7 @@ class Exprodental(scrapy.Spider):
         self.connection = make_mongo_conn()
 
         with open('./scrappers/inputs/exprodental.json', 'r') as file:
-            urls = json.loads(file.read())
+            urls = json.load(file)
 
         for url in urls:
             yield Request(url, callback=self.parse)

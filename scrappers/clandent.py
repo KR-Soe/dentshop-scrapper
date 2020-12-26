@@ -2,13 +2,15 @@ import json
 import re
 import scrapy
 from scrapy.http import Request
+from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
+
 
 class Clandent(scrapy.Spider):
     name = 'clandent'
 
     with open('./scrappers/inputs/clandent.json', 'r') as file:
-        start_urls = json.loads(file.read())
+        start_urls = json.load(file)
 
     def parse(self, response):
         self.connection = make_mongo_conn()
@@ -48,3 +50,7 @@ class Clandent(scrapy.Spider):
     # def _get_number(self, text):
     #     result = re.sub(r'\D*', '', text)
     #     return 0 if result == '' else result
+
+process = CrawlerProcess(settings={})
+process.crawl(Clandent)
+process.start()

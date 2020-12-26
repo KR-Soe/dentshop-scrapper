@@ -3,7 +3,9 @@ import scrapy
 import re
 import json
 from scrapy.http import Request
+from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
+
 
 class DentalLaval(scrapy.Spider):
     name = 'dental_laval'
@@ -63,3 +65,8 @@ class DentalLaval(scrapy.Spider):
     def _get_number(self, text):
         result = re.sub(r'\D*', '', text)
         return 0 if result == '' else result
+
+
+process = CrawlerProcess(settings={})
+process.crawl(DentalLaval)
+process.start()

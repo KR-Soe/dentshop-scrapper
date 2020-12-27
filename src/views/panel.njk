@@ -10,8 +10,19 @@
 </style>
 {% endblock %}
 
+{% block js %}
+<script defer src="/public/js/panel.js"></script>
+{% endblock %}
+
 {% block content %}
-    <div>
+    <div class="tabs is-centered">
+        <ul id="tabList">
+            <li data-option="csv" class="is-active"><a href="javascript: useTab('csv');">CSV</a></li>
+            <li data-option="api"><a href="javascript: useTab('api');">API</a></li>
+        </ul>
+    </div>
+
+    <div id="csv" data-container>
         <form class="form" action="/api/csv" enctype="multipart/form-data" method="post">
             <div class="field">
                 <label class="label" for="file">Subir archivo CSV</label>
@@ -21,5 +32,14 @@
                 <input type="submit" class="button is-primary" value="Subir" />
             </div>
         </form>
+    </div>
+
+    <div id="api" data-container class="is-hidden">
+        <div class="form">
+            <div class="field">
+                <label class="label"></label>
+                <button class="button is-primary" onclick="sync()">Sincronizar Productos</button>
+            </div>
+        </div>
     </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 const { CSV, Row } = require('../util/csv');
 const parseCSVContents = require('../util/csvparser');
 const exprodentalRepository = require('../repositories/exprodental');
+const biotechRepository = require('../repositories/biotech');
 
 async function controller(req, res) {
   const importedProducts = await parseCSVContents(req.file.path);
@@ -16,7 +17,12 @@ async function controller(req, res) {
 }
 
 async function exportScrappedRows(importedRows) {
-  const scrappedProducts = await exprodentalRepository.findAll();
+  const products = await Promise.all([
+    exprodentalRepository.findAll(),
+    biotechRepository.findAll()
+  ]);
+
+  const scrappedProducts = products.reduce((arr, next) => arr.concat(next), []);
   return scrappedProducts.map(collectionToCSVRow);
 }
 

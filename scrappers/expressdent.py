@@ -8,14 +8,22 @@ from utils.connection import make_mongo_conn
 class Expressdent(scrapy.Spider):
     name = 'expressdent'
 
-    start_urls = 'https://expressdent.cl/'
+    def start_requests(self):
+        self.connection = make_mongo_conn()
+        start_url = 'https://expressdent.cl/'
+
+        yield Request(start_url, callback=self.parse)
 
     def parse(self, response):
-        self.connection = make_mongo_conn()
-        max_page = int(response.css('.page-numbers::text)').getall()[-1])
-        print('Max Page ', max_page)
-        for i in range(max_page):
+        last_page = [
+            int(num)
+            for num in response.css('.page-numbers::text').getall()
+            if num.isnumeric()
+        ][-1]
+
+        for i in range(1, last_page + 1):
             item = response.css('.ht-product-image > a[href]::attr(href)').getall()
+
             for link in item:
                 yield Request(link, callback=self._parse_detail)
 

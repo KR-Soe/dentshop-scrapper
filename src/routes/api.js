@@ -5,7 +5,7 @@ const upload = multer({
 });
 
 router.post('/auth', require('../controllers/authenticate'));
-router.post('/api/csv', upload.single('jumpseller'), require('../controllers/csv'));
+router.post('/csv', upload.single('jumpseller'), require('../controllers/csv'));
 router.get('/sync', require('../controllers/sync'));
 router.get('/products', require('../controllers/jumpseller'));
 

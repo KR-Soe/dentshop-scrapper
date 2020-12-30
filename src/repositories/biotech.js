@@ -1,20 +1,7 @@
-const createConnection = require('../util/mongoConnection');
+const baseRepository = require('../baseRepository');
 
 const repository = {
-  async findAll() {
-    const db = await createConnection();
-
-    return new Promise((resolve, reject) => {
-      db.collection('biotech').find({}).toArray((err, docs) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve(docs);
-      });
-    });
-  }
+  collection: 'biotech'
 };
 
-module.exports = repository;
+module.exports = Object.assign(repository, baseRepository);

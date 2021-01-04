@@ -1,4 +1,4 @@
-const baseRepository = require('../baseRepository');
+const baseRepository = require('./baseRepository');
 
 const repository = {
   collection: 'biotech'

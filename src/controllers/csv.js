@@ -18,8 +18,8 @@ async function controller(req, res) {
 
 async function exportScrappedRows(importedRows) {
   const products = await Promise.all([
-    exprodentalRepository.findAll(),
-    biotechRepository.findAll()
+    exprodentalRepository.findAll()
+    //biotechRepository.findAll()
   ]);
 
   const scrappedProducts = products.reduce((arr, next) => arr.concat(next), []);

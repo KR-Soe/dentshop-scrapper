@@ -6,6 +6,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 from utils.connection import make_mongo_conn
+from utils.parser import text_to_number
 
 
 class Mayordent(scrapy.Spider):
@@ -34,8 +35,8 @@ class Mayordent(scrapy.Spider):
 
     def _parse_detail(self, response):
         product_title = response.css('.product_title.entry-title::text').get()
-        internet_price = self._get_number(response.css('.summary.entry-summary .woocommerce-Price-amount.amount > bdi::text').get())
-        stock = self._get_number(response.css('.stock.in-stock::text').get())
+        internet_price = text_to_number(response.css('.summary.entry-summary .woocommerce-Price-amount.amount > bdi::text').get())
+        stock = text_to_number(response.css('.stock.in-stock::text').get())
         sku = response.css('.sku_wrapper > .sku::text').get()
         category = response.css('.posted_in > a::text').getall()
         image = response.css('.wp-post-image.thb-ignore-lazyload::attr(src)').get()
@@ -53,13 +54,6 @@ class Mayordent(scrapy.Spider):
         }
 
         self.connection.dentshop.mayordent.insert_one(output)
-
-    def _get_number(self, text):
-        if text is None:
-            return 0
-
-        result = re.sub(r'\D*', '', text)
-        return 0 if result == '' else result
 
 
 process = CrawlerProcess(settings={})

@@ -32,8 +32,8 @@ class Product {
     this.currency = initialData.currency || 'CLP';
   }
 
-  toJSON() {
-    return {
+  toJSON(removeNulls = false) {
+    const data = {
       "id": this.id,
       "name": this.name,
       "page_title": this.pageTitle,
@@ -57,14 +57,35 @@ class Product {
       "height": this.height,
       "diameter": this.diameter,
       "google_product_category": this.googleProductCategory,
-      "categories": this.categories,
-      "images": this.images,
-      "variants": this.variants,
-      "fields": this.fields,
+      "categories": this._toArray(this.categories),
+      "images": this._toArray(this.images),
+      "variants": this._toArray(this.variants),
+      "fields": this._toArray(this.fields),
       "permalink": this.permalink,
       "discount": this.discount,
       "currency": this.currency
     };
+
+    if (!removeNulls) {
+      return data;
+    }
+
+    const newData = Object.keys(data)
+      .filter(key => data[key] !== null)
+      .reduce((obj, key) => {
+        obj[key] = data[key];
+        return obj;
+      }, {});
+
+    return newData;
+  }
+
+  _toArray(field) {
+    if (Array.isArray(field)) {
+      return field;
+    }
+
+    return field ? field.split(',') : null;
   }
 }
 

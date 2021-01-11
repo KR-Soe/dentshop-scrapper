@@ -1,8 +1,16 @@
-.PHONY: scrappers
+.PHONY: init scrappers
+
+init: node_modules
+	mkdir -p logs/
+
+node_modules:
+	npm ci --no-optional
+	pip install -r requirements.txt
+	chmod +x load_scrapper.sh
 
 scrappers:
-	source ~/.envs/dentshop/bin/activate && \
-	python scrappers/exprodental.py && \
-	python scrappers/biotech.py && \
-	python scrappers/dental-laval.py && \
-	python scrappers/mayordent.py
+	bash load_scrapper.sh expressdent
+	bash load_scrapper.sh exprodental
+	bash load_scrapper.sh biotech
+	bash load_scrapper.sh dentallaval
+	bash load_scrapper.sh mayordent

@@ -1,4 +1,5 @@
 const createConnection = require('../util/mongoConnection');
+const makePromise = require('../util/toPromise');
 
 const baseRepository = {
   async init() {
@@ -11,17 +12,7 @@ const baseRepository = {
   },
   async findAll() {
     const db = await this.init();
-
-    return new Promise((resolve, reject) => {
-      db.collection(this.collection).find({}).toArray((err, docs) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve(docs);
-      });
-    });
+    return makePromise(done => db.collection(this.collection).find({}).toArray(done));
   }
 };
 

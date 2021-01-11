@@ -20,9 +20,9 @@ class Queue {
   }
 }
 
-
 const requestPool = () => {
   const queue = new Queue();
+  const DEFAULT_TIMEOUT = 500;
   let finished = true;
   let timer = null;
 
@@ -37,11 +37,12 @@ const requestPool = () => {
     fn()
       .then((response) => {
         resolve(response);
-        timer = setTimeout(start, 500);
+        timer = setTimeout(start, DEFAULT_TIMEOUT);
       })
       .catch((error) => {
+        console.log('rejecting ?', error.response);
         reject(error);
-        timer = setTimeout(start, 500);
+        timer = setTimeout(start, DEFAULT_TIMEOUT);
       });
   };
 

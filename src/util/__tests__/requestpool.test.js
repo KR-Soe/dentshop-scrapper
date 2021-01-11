@@ -16,7 +16,7 @@ describe('> util/requestpool', () => {
   test('setting an array of promises to be executed', () => {
     const asyncFunctions = [
       () => Promise.resolve(123),
-      () => Promise.resolve('potato'),
+      () => new Promise((resolve) => setTimeout(() => resolve('potato'), 700)),
       () => Promise.resolve(false)
     ].map(fn => requestpool.add(fn));
 

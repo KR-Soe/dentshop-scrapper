@@ -5,6 +5,7 @@ import json
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
+from utils.parser import text_to_number
 
 
 class DentalLaval(scrapy.Spider):
@@ -39,8 +40,8 @@ class DentalLaval(scrapy.Spider):
             details = json.loads(details)
 
         product_title = response.css('.product-single__title::text').get()
-        normal_price = self._get_number(response.css('.product-single__price::text').get())
-        stock = self._get_number(details['stockAvailable'])
+        normal_price = text_to_number(response.css('.product-single__price::text').get())
+        stock = text_to_number(details['stockAvailable'])
         internet_price = normal_price
         sku = response.css('#ProductSelect-product-template > option::attr(value)').get()
         category = response.css('.h1.return-link::text').extract()[1].strip().split('Volver a')[1]
@@ -57,12 +58,6 @@ class DentalLaval(scrapy.Spider):
             'referUrl': response.url
         }
         self.connection.dentshop.dentallaval.insert_one(output)
-        print('inserted')
-
-
-    def _get_number(self, text):
-        result = re.sub(r'\D*', '', text)
-        return 0 if result == '' else result
 
 
 process = CrawlerProcess(settings={})

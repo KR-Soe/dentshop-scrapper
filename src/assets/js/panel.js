@@ -1,3 +1,13 @@
+var socket = io();
+
+socket.on('notify', (notification) => {
+  console.log('llego la notif', notification);
+  const wrapper = $('#notifications');
+  const element = document.createElement('p');
+  element.textContent = notification.message;
+  wrapper.insertBefore(element, wrapper.firstChild);
+});
+
 function $$(selector) {
   return document.querySelectorAll(selector);
 }
@@ -23,9 +33,6 @@ function useTab(option) {
 }
 
 function sync() {
-  fetch('/api/sync')
-    .then(response => response.json())
-    .then(function(body) {
-      alert(body.message);
-    });
+  console.log('emitting from now')
+  socket.emit('startSync');
 }

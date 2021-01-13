@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block js %}
+<script defer src="/socket.io/socket.io.js"></script>
 <script defer src="/public/js/panel.js"></script>
 {% endblock %}
 
@@ -39,6 +40,8 @@
             <div class="field">
                 <label class="label"></label>
                 <button class="button is-primary" onclick="sync()">Sincronizar Productos</button>
+            </div>
+            <div id="notifications" class="messages">
             </div>
         </div>
     </div>

@@ -6,7 +6,6 @@ const upload = multer({
 
 router.post('/auth', require('../controllers/authenticate'));
 router.post('/csv', upload.single('jumpseller'), require('../controllers/csv'));
-router.get('/sync', require('../controllers/sync'));
 router.get('/products', require('../controllers/jumpseller'));
 
 module.exports = router;

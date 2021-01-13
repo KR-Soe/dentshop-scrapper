@@ -10,7 +10,8 @@ const makeURL = key => `https://api.jumpseller.com/v1/${key}.json?login=${apiLog
 
 const urls = {
   PRODUCTS: makeURL('products'),
-  CATEGORIES: makeURL('categories')
+  CATEGORIES: makeURL('categories'),
+  IMAGES: (id) => `https://api.jumpseller.com/v1/products/${id}/images.json?login=${apiLogin}&authtoken=${authToken}`
 };
 
 const categoriesCache = new NodeCache({ stdTTL: 3600 });
@@ -50,26 +51,25 @@ const service = {
     }
 
     const categories = await this.fetchOrAddCategory(product.category);
-    const newProduct = new Product();
-    newProduct.name = product.title;
-    newProduct.price = product.internetPrice;
-    newProduct.stock = product.stock;
-    newProduct.sku = product.sku;
-    newProduct.brand = product.brand;
-    newProduct.categories = categories;
-    newProduct.description = product.description;
-    newProduct.images = product.images.split(',');
-
-    console.log('here ?');
-    console.log('url', urls.PRODUCTS);
-    console.log('payload', JSON.stringify(newProduct.toJSON(true)));
+    const productToSave = new Product();
+    productToSave.name = product.title;
+    productToSave.price = product.internetPrice;
+    productToSave.stock = product.stock;
+    productToSave.sku = product.sku;
+    productToSave.brand = product.brand;
+    productToSave.categories = categories;
+    productToSave.description = product.description;
 
     try {
-      return this._addProduct(newProduct.toJSON(true));
+      const retrievedProduct = this._addProduct(productToSave.toJSON(true));
+      const newProduct = retrievedProduct.product;
+      await syncRepository.addProduct(newProduct);
+      productsCache.set(newProduct.name, product);
+      await Promise.all(product.images.split(',').map(image => this._addProductImage(image)));
     } catch (err) {
-      console.err(err);
+      console.error(err);
       console.log('url to check', urls.PRODUCTS);
-      console.log('payload', newProduct.toJSON(true));
+      console.log('payload', productToSave.toJSON(true));
     }
   },
   cacheCategories(categories) {
@@ -83,8 +83,8 @@ const service = {
   },
   cacheProducts(products) {
     products.forEach(prod => {
-      const key = prod.product.name;
-      const value = prod.product;
+      const key = prod.name;
+      const value = prod;
       productsCache.set(key, value);
     });
   },
@@ -101,8 +101,6 @@ const service = {
   _addProduct(product) {
     const options = { json: { product } };
 
-    console.log('payload before jumpseller', JSON.stringify(options));
-
     return requestpool
       .add(() => request.post(urls.PRODUCTS, options).json());
   },
@@ -112,6 +110,13 @@ const service = {
 
     return requestpool
       .add(() => request.post(urls.CATEGORIES, options).json());
+  },
+  _addProductImage(id, image) {
+    const payload = { image: { url: image }};
+    const options = { json: payload };
+    const url = urls.IMAGES(id);
+
+    return requestpool.add(() => request.post(url, options).json());
   },
   async _createCategory(categoryName) {
     const newCategory = await this._addCategory(categoryName);

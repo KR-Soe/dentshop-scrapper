@@ -8,7 +8,7 @@ class Product {
     this.price = initialData.price || null;
     this.weight = initialData.weight || null;
     this.stock = initialData.stock || null;
-    this.stockUnlimited = initialData.stock_unlimited || null;
+    this.stockUnlimited = false;
     this.sku = initialData.sku || null;
     this.brand = initialData.brand || null;
     this.barcode = initialData.barcode || null;

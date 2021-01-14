@@ -40,7 +40,7 @@ const requestPool = () => {
         timer = setTimeout(start, DEFAULT_TIMEOUT);
       })
       .catch((error) => {
-        console.log('rejecting ?', error.response);
+        // console.log('rejecting ?', error.response);
         reject(error);
         timer = setTimeout(start, DEFAULT_TIMEOUT);
       });

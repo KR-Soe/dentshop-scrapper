@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development nodemon --unhandled-rejections=strict src/server.js | pino-pretty",
+    "start:dev": "NODE_ENV=development nodemon src/server.js | pino-pretty",
     "start:prod": "NODE_ENV=production node src/server.js",
     "test": "jest ."
   },

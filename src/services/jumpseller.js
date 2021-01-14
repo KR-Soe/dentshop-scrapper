@@ -11,6 +11,7 @@ const makeURL = key => `https://api.jumpseller.com/v1/${key}.json?login=${apiLog
 const urls = {
   PRODUCTS: makeURL('products'),
   CATEGORIES: makeURL('categories'),
+  PRODUCTS_UPDATABLE: (id) => `https://api.jumpseller.com/v1/products/${id}.json?login=${apiLogin}&authtoken=${authToken}`,
   IMAGES: (id) => `https://api.jumpseller.com/v1/products/${id}/images.json?login=${apiLogin}&authtoken=${authToken}`
 };
 
@@ -18,6 +19,10 @@ const categoriesCache = new NodeCache({ stdTTL: 3600 });
 const productsCache = new NodeCache({ stdTTL: 3600 });
 
 const service = {
+  logger: null,
+  setLogger(logger) {
+    this.logger = logger;
+  },
   findAllProducts() {
     return requestpool
       .add(() => request.get(urls.PRODUCTS).json());
@@ -36,18 +41,12 @@ const service = {
     return Promise.all(categories.map(categoryName => this._getCategory(categoryName)));
   },
   async updateOrAddProduct(product) {
-    console.log('adding or update');
-
     if (productsCache.has(product.title)) {
-      console.log('here ???? me imagino que despues lo veo :3');
-      // const cachedProduct = productsCache.get(product.title);
-
-      // cachedProduct.price = product.internetPrice;
-      // cachedProduct.stock = product.stock;
-      // cachedProduct.description = product.description;
-
-      // return this._updateProduct(cachedProduct);
-      return Promise.resolve(true);
+      const cachedProduct = productsCache.get(product.title);
+      cachedProduct.price = product.internetPrice;
+      cachedProduct.stock = product.stock;
+      cachedProduct.description = product.description;
+      return this._updateProduct(cachedProduct);
     }
 
     const categories = await this.fetchOrAddCategory(product.category);
@@ -61,15 +60,21 @@ const service = {
     productToSave.description = product.description;
 
     try {
-      const retrievedProduct = this._addProduct(productToSave.toJSON(true));
+      const retrievedProduct = await this._addProduct(productToSave.toJSON());
       const newProduct = retrievedProduct.product;
       await syncRepository.addProduct(newProduct);
       productsCache.set(newProduct.name, product);
-      await Promise.all(product.images.split(',').map(image => this._addProductImage(image)));
+
+      if (product.image) {
+        await Promise.all(
+          product.image.split(',')
+            .filter(x => x.trim())
+            .map(image => this._addProductImage(newProduct.id, image))
+        );
+      }
     } catch (err) {
-      console.error(err);
-      console.log('url to check', urls.PRODUCTS);
-      console.log('payload', productToSave.toJSON(true));
+      this.logger.error('this was the payload %j', productToSave.toJSON());
+      throw err;
     }
   },
   cacheCategories(categories) {
@@ -92,14 +97,21 @@ const service = {
     categoriesCache.flushAll();
     productsCache.flushAll();
   },
-  _updateProduct(product) {
-    const options = { json: { product } };
+  _updateProduct(data) {
+    const payload = {
+      description: data.description,
+      price: data.price,
+      stock: data.stock
+    };
+
+    const options = { json: { product: payload } };
+    const url = urls.PRODUCTS_UPDATABLE(data.id);
 
     return requestpool
-      .add(() => request.put(urls.PRODUCTS, options).json())
+      .add(() => request.put(url, options).json())
   },
-  _addProduct(product) {
-    const options = { json: { product } };
+  _addProduct(data) {
+    const options = { json: { product: data } };
 
     return requestpool
       .add(() => request.post(urls.PRODUCTS, options).json());
@@ -116,7 +128,12 @@ const service = {
     const options = { json: payload };
     const url = urls.IMAGES(id);
 
-    return requestpool.add(() => request.post(url, options).json());
+    return requestpool
+      .add(() => request.post(url, options).json())
+      .catch(() => {
+        console.log('url', url);
+        console.log('payload', JSON.stringify(payload));
+      });
   },
   async _createCategory(categoryName) {
     const newCategory = await this._addCategory(categoryName);

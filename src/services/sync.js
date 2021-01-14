@@ -11,6 +11,8 @@ async function service(logger, socket) {
   logger.info('fetching the products from mongodb');
   socket.emit('notify', { message: 'rescatando los productos anteriormente guardados en jumpseller' });
 
+  jumpsellerService.setLogger(logger);
+
   const extractedProducts = await Promise.all([
     exprodentalRepository.findAll(),
     biotechRepository.findAll(),
@@ -38,9 +40,6 @@ async function service(logger, socket) {
 
   logger.info('trying to syncronize the products on jumpseller');
 
-  let ok = 0;
-  let notOk = 0;
-
   try {
     logger.info('getting all categories from products');
     socket.emit('notify', { message: 'agrupando las categorias de los productos nuevos' });
@@ -51,25 +50,29 @@ async function service(logger, socket) {
     const totalProducts = productsToUse.length;
 
     for (let i = 0; i < totalCategories; i++) {
-      const cat = categoriesToFetchOrCreate[i];
-      socket.emit('notify', { message: `procesando categoria ${i + 1} de ${totalCategories}` });
       logger.debug('processing category %d of %d', i + 1, totalCategories);
+      socket.emit('notify', {
+        message: `procesando categoria ${i + 1} de ${totalCategories}`,
+        updateLastNotification: true
+      });
+      const cat = categoriesToFetchOrCreate[i];
       await jumpsellerService.fetchOrAddCategory(cat);
     }
 
     socket.emit('notify', { message: 'categorias guardadas' });
 
     for (let i = 0; i < totalProducts; i++) {
-      const prod = productsToUse[i];
       logger.debug('processing product %d of %d', i + 1, totalProducts);
-      socket.emit('notify', { message: `procesando producto ${i + 1} de ${totalProducts}` });
+      socket.emit('notify', {
+        message: `procesando producto ${i + 1} de ${totalProducts}`,
+        updateLastNotification: true
+      });
+      const prod = productsToUse[i];
 
       try {
         await jumpsellerService.updateOrAddProduct(prod);
-        ok++;
       } catch(err) {
-        console.error(err);
-        notOk++;
+        logger.error(err);
       }
     }
 

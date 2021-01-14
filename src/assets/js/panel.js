@@ -1,11 +1,16 @@
-var socket = io();
+const socket = io();
+const wrapper = $('#notifications');
 
 socket.on('notify', (notification) => {
-  console.log('llego la notif', notification);
   const wrapper = $('#notifications');
-  const element = document.createElement('p');
-  element.textContent = notification.message;
-  wrapper.insertBefore(element, wrapper.firstChild);
+
+  if (notification.updateLastNotification) {
+    wrapper.firstChild.textContent = notification.message;
+  } else {
+    const element = document.createElement('p');
+    element.textContent = notification.message;
+    wrapper.insertBefore(element, wrapper.firstChild);
+  }
 });
 
 function $$(selector) {

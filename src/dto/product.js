@@ -32,7 +32,7 @@ class Product {
     this.currency = initialData.currency || 'CLP';
   }
 
-  toJSON(removeNulls = false) {
+  toJSON(removeNulls = true) {
     const data = {
       "id": this.id,
       "name": this.name,

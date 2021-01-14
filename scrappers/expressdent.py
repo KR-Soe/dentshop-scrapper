@@ -42,7 +42,8 @@ class Expressdent(scrapy.Spider):
                 'sku': sku,
                 'category': category,
                 'image': image,
-                'referUrl': response.url
+                'referUrl': response.url,
+                'platformSource': 'expressdent'
             }
 
             self.connection.dentshop.expressdent.insert_one(output)

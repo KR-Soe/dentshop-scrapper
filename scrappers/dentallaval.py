@@ -45,7 +45,7 @@ class DentalLaval(scrapy.Spider):
         internet_price = normal_price
         sku = response.css('#ProductSelect-product-template > option::attr(value)').get()
         category = response.css('.h1.return-link::text').extract()[1].strip().split('Volver a')[1]
-        image = response.css('#ProductPhotoImg-product-template::attr(src)').get()
+        image = f'https://{response.css('#ProductPhotoImg-product-template::attr(src)').get()}'
 
         output = {
             'title': product_title,
@@ -55,7 +55,8 @@ class DentalLaval(scrapy.Spider):
             'sku': sku,
             'category': category.strip(),
             'image': image,
-            'referUrl': response.url
+            'referUrl': response.url,
+            'platformSource': 'dental-laval'
         }
         self.connection.dentshop.dentallaval.insert_one(output)
 

@@ -50,7 +50,8 @@ class Mayordent(scrapy.Spider):
             'sku': sku,
             'category': category,
             'image': image,
-            'referUrl': response.url
+            'referUrl': response.url,
+            'platformSource': 'mayordent'
         }
 
         self.connection.dentshop.mayordent.insert_one(output)

@@ -54,7 +54,8 @@ def insert_data(data):
             'stock': item['availableStock'],
             'category': categories,
             'image': None,
-            'referUrl': f'https://www.biotechchile.com/#/producto/{uri}/{item_id}'
+            'referUrl': f'https://www.biotechchile.com/#/producto/{uri}/{item_id}',
+            'platformSource': 'biotech'
         }
 
         connection.dentshop.biotech.insert_one(output)

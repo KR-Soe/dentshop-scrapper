@@ -53,7 +53,8 @@ class Exprodental(scrapy.Spider):
             'brand': brand,
             'description': description.strip(),
             'image': f'https://www.exprodental.cl/{image}',
-            'referUrl': response.url
+            'referUrl': response.url,
+            'platformSource': 'exprodental'
         }
 
         self.connection.dentshop.exprodental.insert_one(output)

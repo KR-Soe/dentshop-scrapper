@@ -5,6 +5,7 @@ from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
 from utils.parser import text_to_number
+from dto.product import Product
 
 
 class Expressdent(scrapy.Spider):
@@ -25,30 +26,30 @@ class Expressdent(scrapy.Spider):
             yield Request(link, callback=self._parse_detail)
 
     def _parse_detail(self, response):
-        try:
-            product_title = response.css('.single-post-title.product_title.entry-title::text').get()
-            normal_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
-            internet_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
-            stock = text_to_number(response.css('.stock.in-stock::text').get())
-            sku = response.css('.sku_wrapper > .sku::text').get()
-            category = response.css('.posted_in > a::text').getall()
-            image = response.css('.woocommerce-product-gallery__image > a::attr(href)').get()
+        product_title = response.css('.single-post-title.product_title.entry-title::text').get()
+        normal_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
+        internet_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
+        stock = text_to_number(response.css('.stock.in-stock::text').get())
+        sku = response.css('.sku_wrapper > .sku::text').get()
+        categories = response.css('.posted_in > a::text').getall()
+        image = response.css('.woocommerce-product-gallery__image > a::attr(href)').get()
+        description = response.css('.woocommerce-product-details__short-description > p::text').get()
 
-            output = {
-                'title': product_title,
-                'internetPrice': int(internet_price),
-                'normalPrice': int(normal_price),
-                'stock': int(stock),
-                'sku': sku,
-                'category': category,
-                'image': image,
-                'referUrl': response.url,
-                'platformSource': 'expressdent'
-            }
+        output = Product()
+        output.title = product_title
+        output.price = int(internet_price)
+        output.stock = int(stock)
+        output.sku = sku
+        output.image = image or 'sin imagen'
+        output.refer_url = response.url
+        output.description = description or ''
+        output.brand = ''
+        output.platform_source = 'expressdent'
 
-            self.connection.dentshop.expressdent.insert_one(output)
-        except TypeError as err:
-            pass
+        for category in categories:
+            output.add_category(category)
+
+        self.connection.dentshop.expressdent.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

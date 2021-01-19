@@ -6,4 +6,4 @@ def text_to_number(text):
         return 0
 
     result = re.sub(r'\D*', '', text)
-    return 0 if result == '' else result
+    return 0 if result == '' else int(result)

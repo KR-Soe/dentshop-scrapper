@@ -4,6 +4,7 @@ import scrapy
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
+from dto.product import Product
 
 
 class Exprodental(scrapy.Spider):
@@ -43,21 +44,19 @@ class Exprodental(scrapy.Spider):
             category = self._get_category(texts[2])
             sku = texts[1].split(' ')[1]
 
-        output = {
-            'title': product_title,
-            'internetPrice': int(internet_price),
-            'normalPrice': int(normal_price),
-            'stock': int(stock),
-            'sku': sku,
-            'category': category,
-            'brand': brand,
-            'description': description.strip(),
-            'image': f'https://www.exprodental.cl/{image}',
-            'referUrl': response.url,
-            'platformSource': 'exprodental'
-        }
+        output = Product()
+        output.title = product_title
+        output.price = int(internet_price)
+        output.stock = int(stock)
+        output.sku = sku
+        output.brand = brand
+        output.description = description.strip()
+        output.image = f'https://www.exprodental.cl/{image}'
+        output.refer_url = response.url
+        output.platform_source = 'exprodental'
+        output.add_category(category)
 
-        self.connection.dentshop.exprodental.insert_one(output)
+        self.connection.dentshop.exprodental.insert_one(output.to_serializable())
 
     def _get_number(self, text):
         result = re.sub(r'\D*', '', text)

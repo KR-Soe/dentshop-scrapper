@@ -7,6 +7,7 @@ from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 from utils.connection import make_mongo_conn
 from utils.parser import text_to_number
+from dto.product import Product
 
 
 class Mayordent(scrapy.Spider):
@@ -40,21 +41,22 @@ class Mayordent(scrapy.Spider):
         sku = response.css('.sku_wrapper > .sku::text').get()
         category = response.css('.posted_in > a::text').getall()
         image = response.css('.wp-post-image.thb-ignore-lazyload::attr(src)').get()
+        brand = product_title.split(',')[-1].strip()
         del category[0]
 
-        output = {
-            'title': product_title,
-            'internetPrice': int(internet_price),
-            'normalPrice': None,
-            'stock': int(stock),
-            'sku': sku,
-            'category': category,
-            'image': image,
-            'referUrl': response.url,
-            'platformSource': 'mayordent'
-        }
+        output = Product()
+        output.title = product_title
+        output.price = int(internet_price)
+        output.stock = int(stock)
+        output.sku = sku or ''
+        output.image = image or 'sin imagen'
+        output.refer_url = response.url
+        output.platform_source = 'mayordent'
+        output.brand = brand
+        output.description = ''
+        output.add_category(category)
 
-        self.connection.dentshop.mayordent.insert_one(output)
+        self.connection.dentshop.mayordent.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

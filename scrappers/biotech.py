@@ -1,65 +1,68 @@
+import re
 import json
-import requests
+import scrapy
+from scrapy.http import Request
+from scrapy.crawler import CrawlerProcess
 from utils.connection import make_mongo_conn
-
-def send_request(category, page):
-    url = 'https://biotechchile.cl/ws/api/products'
-    params = {
-        'categoryId': f'{category}',
-        'take': 200,
-        'page': {page},
-        'filterOrderBy': 'customAsc',
-        'searchWord': '',
-        'productTypes%5B0%5D': 1,
-        'productTypes%5B1%5D': 4,
-        'productTypes%5B2%5D': 5,
-        'filterBrandId': 0,
-        'isImportant': False,
-        'isOffering': False,
-        'filterPriceRange%5B0%5D': 0,
-        'filterPriceRange%5B1%5D': 500000,
-        'limitPriceRangeMin': 0,
-        'limitPriceRangeMax': 500000,
-        'token': ''
-    }
-
-    print('sending request...', url,params)
-    results = requests.post(url, params).json()
-
-    if len(results['products']) == 0:
-        return {}
-
-    data = results['products']['data']
-    current_page = results['products']['current_page']
-    last_page = results['products']['last_page']
-
-    insert_data(data)
-    return send_request(category, current_page+1) if last_page > current_page else send_request(category+1, 1)
+from utils.parser import text_to_number
+from dto.product import Product
 
 
-def insert_data(data):
-    connection = make_mongo_conn()
-    for item in data:
-        uri = item['uri']
-        item_id = item['id']
-        categories = []
-        for cat in item['categories']:
-            categories.append(cat['name'])
+class Biotech(scrapy.Spider):
+    name = 'biotech'
 
-        output = {
-            'title': item['name'],
-            'internetPrice': int(float(item['net_price'])),
-            'normalPrice': int(float(item['salePrice'])),
-            'sku': item['barcode'],
-            'stock': item['availableStock'],
-            'category': categories,
-            'image': None,
-            'referUrl': f'https://www.biotechchile.com/#/producto/{uri}/{item_id}',
-            'platformSource': 'biotech'
-        }
+    def start_requests(self):
+        self.connection = make_mongo_conn()
+        self.categories = {}
 
-        connection.dentshop.biotech.insert_one(output)
+        with open('./scrappers/inputs/biotech.json', 'r') as file:
+            urls = json.load(file)
 
-    print('total items inserted: ', len(data))
+        for url in urls:
+            self._add_category(url)
 
-print(send_request(1,1))
+            for i in range(1, 5):
+                new_url = f'{url}/page/{i}'
+                yield Request(new_url, callback=self._parse_list)
+
+    def _add_category(self, url):
+        category_name, pk = url.split('/')[-1].split('-')
+        self.categories[pk] = category_name
+
+    def _get_category_from_url(self, url):
+        result = re.search(r'category=(?P<category_id>\d+)', url)
+        category_name = self.categories[result.group('category_id')]
+        return category_name
+
+    def _parse_list(self, response):
+        links = response.css('.card.oe_product_cart a::attr(href)').getall()
+        new_links = [f'https://biotechchile.com{url}' for url in links if url != '#']
+
+        for link in new_links:
+            yield Request(link, callback=self._parse_detail)
+
+    def _parse_detail(self, response):
+        category = self._get_category_from_url(response.url)
+        title = response.css('#product_details > h1::text').get()
+        price = response.css('.oe_price > .oe_currency_value::text').get()
+        image = response.css('.carousel.slide img::attr(src)').get()
+        stock = response.css('.availability_messages.o_not_editable > div').get()
+
+        output = Product()
+        output.title = title
+        output.price = text_to_number(price)
+        output.refer_url = response.url
+        output.image = image
+        output.brand = ''
+        output.description = ''
+        output.sku = ''
+        output.platform_source = 'biotech'
+        output.stock = text_to_number(stock)
+        output.add_category(category)
+
+        self.connection.dentshop.biotech.insert_one(output.to_serializable())
+
+
+process = CrawlerProcess(settings={})
+process.crawl(Biotech)
+process.start()

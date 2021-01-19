@@ -14,3 +14,4 @@ scrappers:
 	bash load_scrapper.sh biotech
 	bash load_scrapper.sh dentallaval
 	bash load_scrapper.sh mayordent
+	bash load_scrapper.sh clandent

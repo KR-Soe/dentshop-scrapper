@@ -1,8 +1,4 @@
-const exprodentalRepository = require('../repositories/exprodental');
-const biotechRepository = require('../repositories/biotech');
-const dentallavalRepository = require('../repositories/dentallaval');
-const expressdentRepository = require('../repositories/expressdent');
-const mayordentRepository = require('../repositories/mayordent');
+const productsRepository = require('../repositories/products');
 const jumpsellerService = require('./jumpseller');
 const syncRepository = require('../repositories/sync');
 
@@ -13,16 +9,7 @@ async function service(logger, socket) {
 
   jumpsellerService.setLogger(logger);
 
-  const extractedProducts = await Promise.all([
-    exprodentalRepository.findAll(),
-    biotechRepository.findAll(),
-    dentallavalRepository.findAll(),
-    expressdentRepository.findAll(),
-    mayordentRepository.findAll()
-  ]);
-
-  logger.info('now flattening the product array');
-  const productsToUse = extractedProducts.reduce((arr, next) => arr.concat(next), []);
+  const productsToUse = await productsRepository.findAll();
 
   logger.info('getting all categories and products from jumpseller');
 
@@ -76,6 +63,7 @@ async function service(logger, socket) {
       }
     }
 
+    await productsRepository.deleteAll();
   } catch (err) {
     return false;
   }

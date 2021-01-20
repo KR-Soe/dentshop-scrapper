@@ -49,7 +49,7 @@ class Expressdent(scrapy.Spider):
         for category in categories:
             output.add_category(category)
 
-        self.connection.dentshop.expressdent.insert_one(output.to_serializable())
+        self.connection.dentshop.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

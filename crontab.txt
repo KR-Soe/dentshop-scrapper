@@ -1,0 +1,8 @@
+# schedules for dentshop scrappers
+
+0 0 * * * bash /home/dentshop/load_scrapper.sh biotech
+0 1 * * * bash /home/dentshop/load_scrapper.sh clandent
+0 2 * * * bash /home/dentshop/load_scrapper.sh dentallaval
+0 3 * * * bash /home/dentshop/load_scrapper.sh expressdent
+0 4 * * * bash /home/dentshop/load_scrapper.sh exprodental
+0 5 * * * bash /home/dentshop/load_scrapper.sh mayordent

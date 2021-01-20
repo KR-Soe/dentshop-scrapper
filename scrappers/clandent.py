@@ -27,7 +27,7 @@ class Clandent(scrapy.Spider):
             yield Request(link, callback=self._parse_product_detail)
 
     def _parse_product_detail(self, response):
-        raw_price = response.css('.price > .woocommerce-Price-amount.amount > bdi::text').get()
+        raw_price = response.css('.price .woocommerce-Price-amount.amount > bdi::text').getall()[-1]
         price = raw_price.replace('.', '')
         brand = response.css('.product-brands > a::text').get()
         name = response.css('.product_title.entry-title::text').get()
@@ -40,7 +40,7 @@ class Clandent(scrapy.Spider):
         output = Product()
         output.platform_source = 'clandent'
         output.brand = brand or ''
-        output.title = name
+        output.title = name or 'sin nombre'
         output.price = price
         output.refer_url = response.url
         output.description = description
@@ -49,7 +49,7 @@ class Clandent(scrapy.Spider):
         output.stock = stock or 0
         output.add_category(category)
 
-        self.connection.dentshop.clandent.insert_one(output.to_serializable())
+        self.connection.dentshop.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

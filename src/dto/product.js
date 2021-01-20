@@ -13,7 +13,7 @@ class Product {
     this.brand = initialData.brand || null;
     this.barcode = initialData.barcode || null;
     this.featured = initialData.featured || null;
-    this.status = initialData.status || null;
+    this.status = 'disabled';
     this.shippingRequired = initialData.shipping_required || null;
     this.createdAt = initialData.created_at || null;
     this.updatedAt = initialData.updated_at || null;

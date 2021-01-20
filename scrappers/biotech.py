@@ -60,7 +60,7 @@ class Biotech(scrapy.Spider):
         output.stock = text_to_number(stock)
         output.add_category(category)
 
-        self.connection.dentshop.biotech.insert_one(output.to_serializable())
+        self.connection.dentshop.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

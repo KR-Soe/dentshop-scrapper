@@ -13,12 +13,9 @@ class Product:
         self._missing_field = None
 
     def _is_valid(self):
-        attributes = vars(self)
+        attributes = [attr for attr in vars(self) if not attr.startswith('_')]
 
         for field in attributes:
-            if field.startswith('_'):
-                continue
-
             if getattr(self, field) is None:
                 self._missing_field = field
                 return False
@@ -30,11 +27,19 @@ class Product:
         return True
 
     def add_category(self, category):
-        self._categories.append(category)
+        formatted_category = category.upper()\
+            .replace('Á', 'A')\
+            .replace('É', 'E')\
+            .replace('Í', 'I')\
+            .replace('Ó', 'O')\
+            .replace('Ú', 'U')
+
+        self._categories.append(formatted_category)
 
     def to_serializable(self):
         if not self._is_valid():
-            raise Exception(f'This product is not completed because of {self._missing_field} on {self.refer_url}')
+            message = f'This product is not completed because of {self._missing_field} on {self.refer_url}'
+            raise Exception(message)
 
         return {
             'title': self.title,

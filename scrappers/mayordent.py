@@ -39,10 +39,9 @@ class Mayordent(scrapy.Spider):
         internet_price = text_to_number(response.css('.summary.entry-summary .woocommerce-Price-amount.amount > bdi::text').get())
         stock = text_to_number(response.css('.stock.in-stock::text').get())
         sku = response.css('.sku_wrapper > .sku::text').get()
-        category = response.css('.posted_in > a::text').getall()
+        categories = response.css('.posted_in > a::text').getall()
         image = response.css('.wp-post-image.thb-ignore-lazyload::attr(src)').get()
         brand = product_title.split(',')[-1].strip()
-        del category[0]
 
         output = Product()
         output.title = product_title
@@ -54,9 +53,11 @@ class Mayordent(scrapy.Spider):
         output.platform_source = 'mayordent'
         output.brand = brand
         output.description = ''
-        output.add_category(category)
 
-        self.connection.dentshop.mayordent.insert_one(output.to_serializable())
+        for cat in categories:
+            output.add_category(cat)
+
+        self.connection.dentshop.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

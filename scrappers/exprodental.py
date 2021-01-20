@@ -56,7 +56,7 @@ class Exprodental(scrapy.Spider):
         output.platform_source = 'exprodental'
         output.add_category(category)
 
-        self.connection.dentshop.exprodental.insert_one(output.to_serializable())
+        self.connection.dentshop.products.insert_one(output.to_serializable())
 
     def _get_number(self, text):
         result = re.sub(r'\D*', '', text)

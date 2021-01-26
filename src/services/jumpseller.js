@@ -4,6 +4,7 @@ const requestpool = require('../util/requestpool');
 const syncRepository = require('../repositories/sync');
 const Product = require('../dto/product');
 const NodeCache = require('node-cache');
+const pricingService = require('./pricing');
 const { apiLogin, authToken } = config.jumpSeller;
 
 const urls = {
@@ -56,7 +57,7 @@ const service = {
   async updateOrAddProduct(product) {
     if (productsCache.has(product.title)) {
       const cachedProduct = productsCache.get(product.title);
-      cachedProduct.price = product.internetPrice;
+      cachedProduct.price = pricingService.calculatePriceWithRevenue(product.internetPrice);
       cachedProduct.stock = product.stock;
       cachedProduct.description = product.description;
       return this._updateProduct(cachedProduct);
@@ -65,7 +66,7 @@ const service = {
     const categories = await this.fetchOrAddCategory(product.category);
     const productToSave = new Product();
     productToSave.name = product.title;
-    productToSave.price = product.internetPrice;
+    productToSave.price = pricingService.calculatePriceWithRevenue(product.internetPrice);
     productToSave.stock = product.stock;
     productToSave.sku = product.sku;
     productToSave.brand = product.brand;

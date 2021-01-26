@@ -1,0 +1,74 @@
+[
+  {
+    "category": "RADIOLOGIA",
+    "synonyms": [
+      "RADIOLOGIA"
+    ]
+  },
+  {
+    "category": "ORTODONCIA",
+    "synonyms": [
+      "ORTODONCIA"
+    ]
+  },
+  {
+    "category": "CIRUGIA",
+    "synonyms": [
+      "ENDODONCIA"
+    ]
+  },
+  {
+    "category": "RESTAURACION",
+    "synonyms": [
+      "RESTAURACION",
+      "INSUMOS-RESTAURACION"
+    ]
+  },
+  {
+    "category": "INSUMOS",
+    "synonyms": [
+      "INSUMOS",
+      "MATERIALES"
+    ]
+  },
+  {
+    "category": "FOTOCURADO",
+    "synonyms": [
+      "FOTOCURADO"
+    ]
+  },
+  {
+    "category": "BLANQUEAMIENTO",
+    "synonyms": [
+      "BLANQUEAMIENTO",
+      "FOTOCURADO-BLANQUEAMIENTO"
+    ]
+  },
+  {
+    "category": "FRESAS",
+    "synonyms": [
+      "FRESAS",
+      "INSUMOS-FRESAS"
+    ]
+  },
+  {
+    "category": "PERIODONCIA",
+    "synonyms": [
+      "PERIODONCIA"
+    ]
+  },
+  {
+    "category": "INSTRUMENTAL",
+    "synonyms": [
+      "INSTRUMENTAL",
+      "INSTRUMENTAL-DE-ORDODONCIA",
+      "INSUMOS-INSTRUMENTAL"
+    ]
+  },
+  {
+    "category": "TTM",
+    "synonyms": [
+      "TTM"
+    ]
+  }
+]

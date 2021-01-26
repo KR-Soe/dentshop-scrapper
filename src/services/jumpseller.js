@@ -6,11 +6,10 @@ const Product = require('../dto/product');
 const NodeCache = require('node-cache');
 const { apiLogin, authToken } = config.jumpSeller;
 
-const makeURL = key => `https://api.jumpseller.com/v1/${key}.json?login=${apiLogin}&authtoken=${authToken}`;
-
 const urls = {
-  PRODUCTS: makeURL('products'),
-  CATEGORIES: makeURL('categories'),
+  PRODUCTS: `https://api.jumpseller.com/v1/products.json?login=${apiLogin}&authtoken=${authToken}`,
+  CATEGORIES: `https://api.jumpseller.com/v1/categories.json?login=${apiLogin}&authtoken=${authToken}`,
+  PRODUCT_COUNT: `https://api.jumpseller.com/v1/products/count.json?login=${apiLogin}&authtoken=${authToken}`,
   PRODUCTS_UPDATABLE: (id) => `https://api.jumpseller.com/v1/products/${id}.json?login=${apiLogin}&authtoken=${authToken}`,
   IMAGES: (id) => `https://api.jumpseller.com/v1/products/${id}/images.json?login=${apiLogin}&authtoken=${authToken}`
 };
@@ -23,9 +22,23 @@ const service = {
   setLogger(logger) {
     this.logger = logger;
   },
-  findAllProducts() {
-    return requestpool
-      .add(() => request.get(urls.PRODUCTS).json());
+  async findAllProducts() {
+    const result = await requestpool.add(() => request.get(urls.PRODUCT_COUNT).json());
+    const PRODUCTS_PER_PAGE = 100;
+    const totalPages = Math.ceil(Number.parseInt(result.count) / PRODUCTS_PER_PAGE);
+    let products = [];
+
+    this.logger.debug('how many products are in jumpseller %d', result.count);
+    this.logger.debug('how many pages we need to fetch %d', totalPages);
+
+    for (let i = 1; i <= totalPages; i++) {
+      this.logger.debug('fetching page %d of %d', i, totalPages);
+      const url = `${urls.PRODUCTS}&limit=${PRODUCTS_PER_PAGE}&page=${i}`;
+      const results = await requestpool.add(() => request.get(url).json());
+      products = products.concat(results.map(res => res.product));
+    }
+
+    return products;
   },
   findAllCategories() {
     return requestpool

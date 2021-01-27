@@ -22,6 +22,7 @@ class SyncService {
     await productsRepository.deleteAll();
 
     socket.emit('notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
+    mailService.onSendMail()
     return true;
   }
 

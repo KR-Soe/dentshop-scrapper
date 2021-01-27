@@ -6,6 +6,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 const oh = require('./util/objectHolder');
 const syncService = require('./services/sync');
+const mailService = require('./controllers/mailer');
 
 oh.add('socket', io);
 
@@ -16,7 +17,7 @@ io.on('connection', (socket) => {
   socket.on('startSync', () => {
     logger.info('starting with the sync !!!');
 
-    syncService(oh.get('logger'), oh.get('socket'))
+    syncService(oh.get('logger'), oh.get('socket'), mailService)
       .then(result => {
         logger.info(result);
       });

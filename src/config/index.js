@@ -9,6 +9,15 @@ const config = {
   },
   logger: {
     logLevel: process.env.PINO_LOG_LEVEL || 'debug'
+  },
+  mailer: {
+    emit: {
+      user: 'dospuntodos2021@gmail.com',
+      pass: 'dospuntodos20212022'
+    },
+    to: {
+      user: 'dentshop@mailinator.com'
+    }
   }
 };
 

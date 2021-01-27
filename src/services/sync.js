@@ -3,9 +3,10 @@ const jumpsellerService = require('./jumpseller');
 
 
 class SyncService {
-  constructor(logger, socket) {
+  constructor(logger, socket, mailService) {
     this.logger = logger;
     this.socket = socket;
+    this.mailService = mailService;
   }
 
   async startSync() {

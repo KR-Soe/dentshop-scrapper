@@ -10,7 +10,7 @@ class SyncService {
 
   async startSync() {
     jumpsellerService.setLogger(this.logger);
-    const productsToUse = await productsRepository.findAll();
+    const productsToUse = await productsRepository.findAllByRegisteredCategories();
     const categoriesToFetchOrCreate = productsToUse.map(product => product.category);
 
     this.logger.info('trying to syncronize the products on jumpseller');

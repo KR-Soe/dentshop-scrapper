@@ -22,8 +22,8 @@ class SyncService {
 
     await productsRepository.deleteAll();
 
-    socket.emit('notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
-    await mailService.onSendMail(productsToUse)
+    this.socket.emit('notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
+    await this.mailService.onSendMail(productsToUse)
     return true;
   }
 
@@ -83,7 +83,7 @@ class SyncService {
   }
 }
 
-module.exports = (logger, socket) => {
-  const service = new SyncService(logger, socket);
+module.exports = (logger, socket, mailService) => {
+  const service = new SyncService(logger, socket, mailService);
   return service.startSync();
 };

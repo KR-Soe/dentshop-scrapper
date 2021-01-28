@@ -16,7 +16,6 @@ io.on('connection', (socket) => {
 
   socket.on('startSync', () => {
     logger.info('starting with the sync !!!');
-
     syncService(oh.get('logger'), oh.get('socket'), mailService)
       .then(result => {
         logger.info(result);

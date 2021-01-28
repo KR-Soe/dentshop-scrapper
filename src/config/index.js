@@ -12,11 +12,11 @@ const config = {
   },
   mailer: {
     emit: {
-      user: 'dospuntodos2021@gmail.com',
-      pass: 'dospuntodos20212022'
+      user: process.env.MAIL_OWNER  || 'dospuntodos2021@gmail.com',
+      pass: process.env.MAIL_PASSWORD  || 'dospuntodos20212022'
     },
     to: {
-      user: 'dentshop@mailinator.com'
+      user: process.env.MAIL_USER ||'dentshop@mailinator.com'
     }
   }
 };

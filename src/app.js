@@ -4,7 +4,6 @@ const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const pino = require('pino');
-const authMiddleware = require('./middleware/authentication');
 const oh = require('./util/objectHolder');
 const config = require('./config');
 const app = express();
@@ -32,15 +31,6 @@ app.use((req, _, next) => {
   next();
 });
 
-app.get('/', (_, res) => {
-  res.render('index.njk');
-});
-
-app.get('/panel',authMiddleware, (_, res) => {
-  res.render('panel.njk');
-  setTimeout(() => oh.get('socket').emit('sayHi', { message: 'niggabertus' }), 500);
-});
-
-app.use('/api', require('./routes/api'));
+require('./routes')(app);
 
 module.exports = app;

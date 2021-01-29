@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
-const config = require('./../config');
+const config = require('../config');
+
 
 const mailer = {
   async onSendMail(products){
@@ -34,7 +35,7 @@ const mailer = {
       }
     });
   }
-}
+};
 
 
 module.exports = mailer;

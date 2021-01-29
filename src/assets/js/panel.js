@@ -1,7 +1,11 @@
 const socket = io();
 const wrapper = $('#notifications');
+const content = window.serializedContent;
 
-socket.on('notify', (notification) => {
+const waitFor = (milliSeconds = 0) =>
+  new Promise((resolve) => setTimeout(resolve, milliSeconds));
+
+socket.on('sync:notify', (notification) => {
   const wrapper = $('#notifications');
 
   if (notification.updateLastNotification) {
@@ -11,6 +15,17 @@ socket.on('notify', (notification) => {
     element.textContent = notification.message;
     wrapper.insertBefore(element, wrapper.firstChild);
   }
+});
+
+socket.on('revenue:notify', (notification) => {
+  const revNotification = $('#revenueNotification');
+  revNotification.textContent = notification.message;
+  revNotification.classList.remove('is-hidden');
+
+  waitFor(1000).then(() => {
+    revNotification.textContent = '';
+    revNotification.classList.add('is-hidden');
+  });
 });
 
 function $$(selector) {
@@ -38,6 +53,20 @@ function useTab(option) {
 }
 
 function sync() {
-  console.log('emitting from now')
-  socket.emit('startSync');
+  socket.emit('sync:start');
 }
+
+function updateRevenue() {
+  const currentValue = Number.parseFloat($('#revenue').value);
+
+  if (!currentValue) {
+    return;
+  }
+
+  content.revenue.value = currentValue;
+  socket.emit('revenue:update', { revenue: content.revenue });
+}
+
+(function init() {
+  $('#revenue').value = content.revenue.value;
+})();

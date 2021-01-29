@@ -11,6 +11,9 @@
 {% endblock %}
 
 {% block js %}
+<script>
+    window.serializedContent = {{ serializedContent | safe }};
+</script>
 <script defer src="/socket.io/socket.io.js"></script>
 <script defer src="/public/js/panel.js"></script>
 {% endblock %}
@@ -20,6 +23,7 @@
         <ul id="tabList">
             <li data-option="csv" class="is-active"><a href="javascript: useTab('csv');">CSV</a></li>
             <li data-option="api"><a href="javascript: useTab('api');">API</a></li>
+            <li data-option="manager"><a href="javascript: useTab('manager')">Administradores</a></li>
         </ul>
     </div>
 
@@ -42,6 +46,17 @@
                 <button class="button is-primary" onclick="sync()">Sincronizar Productos</button>
             </div>
             <div id="notifications" class="messages">
+            </div>
+        </div>
+    </div>
+
+    <div id="manager" data-container class="is-hidden">
+        <div class="form">
+            <div class="field">
+                <label for="revenue" class="label">Ganancia Actual</label>
+                <input id="revenue" type="text" class="control" />
+                <button class="button is-primary" onclick="updateRevenue()">Actualizar ganancia</button>
+                <div id="revenueNotification" class="notification is-info is-hidden"></div>
             </div>
         </div>
     </div>

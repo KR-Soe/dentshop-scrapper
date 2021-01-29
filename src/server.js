@@ -5,8 +5,7 @@ const socketio = require('socket.io');
 const server = http.createServer(app);
 const io = socketio(server);
 const oh = require('./util/objectHolder');
-const syncService = require('./services/sync');
-const mailService = require('./controllers/mailer');
+const EventManager = require('./events');
 
 oh.add('socket', io);
 
@@ -14,13 +13,7 @@ io.on('connection', (socket) => {
   const logger = oh.get('logger');
   logger.info('a user connected');
 
-  socket.on('startSync', () => {
-    logger.info('starting with the sync !!!');
-    syncService(oh.get('logger'), oh.get('socket'), mailService)
-      .then(result => {
-        logger.info(result);
-      });
-  });
+  new EventManager(socket, logger).connect();
 
   socket.on('disconnect', () => {
     logger.info('user disconnected');

@@ -9,4 +9,4 @@ export MAIL_OWNER=dospuntodos2021@gmail.com
 export MAIL_PASSWORD=dospuntodos20212022
 export MAIL_USER=dospuntodos2021@gmail.com
 
-./node_modules/.bin/pm2 start src/server.js
+node src/cli.js

@@ -11,6 +11,7 @@ class EventManager {
 
     this._startSync = this._startSync.bind(this);
     this._updateRevenue = this._updateRevenue.bind(this);
+    this._updateCategories = this._updateCategories.bind(this);
   }
 
   connect() {
@@ -36,6 +37,8 @@ class EventManager {
       .map(category => categoryRepository.saveCategory(category));
 
     await Promise.all(promises);
+    const results = await categoryRepository.findAll();
+    this.socket.emit('categories:notify', results);
   }
 }
 

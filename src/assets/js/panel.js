@@ -56,9 +56,9 @@ const onRevenueNotify = (notification) => {
   });
 };
 
-const onCategoryNotify = (notification) => {
+const onCategoryNotify = (newData) => {
   console.log('categories updated');
-  renderCategories(notification.categories);
+  renderCategories(newData);
 };
 
 const socket = io();
@@ -102,7 +102,6 @@ function updateRevenue() {
 
 function updateCategories(categories) {
   socket.emit('categories:update', categories);
-  return window.location.reload();
 }
 
 function createRow(category) {

@@ -1,11 +1,39 @@
-const socket = io();
-const wrapper = $('#notifications');
-const content = window.serializedContent;
-
 const waitFor = (milliSeconds = 0) =>
   new Promise((resolve) => setTimeout(resolve, milliSeconds));
 
-socket.on('sync:notify', (notification) => {
+const $ = selector => document.querySelector(selector);
+const $$ = selector => document.querySelectorAll(selector);
+
+class TableRow {
+  constructor(id, name, categories) {
+    this.id = id;
+    this.name = name;
+    this.categories = categories || [];
+  }
+
+  toHTML() {
+    const tr = document.createElement('tr');
+
+    if (this.id) {
+      tr.dataset.id = this.id;
+    }
+
+    const td1 = document.createElement('td');
+    td1.contentEditable = true;
+    td1.textContent = this.name;
+
+    const td2 = document.createElement('td');
+    td2.contentEditable = true;
+    td2.textContent = this.categories.join(',');
+
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+
+    return tr;
+  }
+}
+
+const onSyncNotify = (notification) => {
   const wrapper = $('#notifications');
 
   if (notification.updateLastNotification) {
@@ -15,9 +43,9 @@ socket.on('sync:notify', (notification) => {
     element.textContent = notification.message;
     wrapper.insertBefore(element, wrapper.firstChild);
   }
-});
+};
 
-socket.on('revenue:notify', (notification) => {
+const onRevenueNotify = (notification) => {
   const revNotification = $('#revenueNotification');
   revNotification.textContent = notification.message;
   revNotification.classList.remove('is-hidden');
@@ -26,15 +54,20 @@ socket.on('revenue:notify', (notification) => {
     revNotification.textContent = '';
     revNotification.classList.add('is-hidden');
   });
-});
+};
 
-function $$(selector) {
-  return document.querySelectorAll(selector);
-}
+const onCategoryNotify = (notification) => {
+  console.log('categories updated');
+  renderCategories(notification.categories);
+};
 
-function $(selector) {
-  return document.querySelector(selector);
-}
+const socket = io();
+const wrapper = $('#notifications');
+const content = window.serializedContent;
+
+socket.on('sync:notify', onSyncNotify);
+socket.on('revenue:notify', onRevenueNotify);
+socket.on('categories:notify', onCategoryNotify);
 
 function useTab(option) {
   Array.from($$('#tabList > li'))
@@ -67,12 +100,56 @@ function updateRevenue() {
   socket.emit('revenue:update', { revenue: content.revenue });
 }
 
-function updateCategories() {
-  // en resumen aqui es donde mandas las categorias
-  const categories = [];
+function updateCategories(categories) {
+  console.log('the cats', categories);
   socket.emit('categories:update', categories);
+}
+
+function createRow(category) {
+  const row = new TableRow(
+    category._id,
+    category.category,
+    category.synonyms
+  );
+
+  return row.toHTML();
+}
+
+function renderCategories(categories) {
+  const table = $('#categoryList > tbody');
+
+  while (table.lastChild) {
+    table.removeChild(table.lastChild);
+  }
+
+  categories.map(createRow)
+    .forEach(tr => table.appendChild(tr));
+}
+
+function saveCategories() {
+  const formatText = text => text.trim().toUpperCase();
+
+  const cats = Array.from($$('#categoryList > tbody > tr'))
+    .map(cat => {
+      return {
+        _id: cat.dataset.id,
+        name: formatText(cat.firstChild.textContent),
+        synonyms: cat.lastChild.textContent.split(',').map(formatText)
+      };
+    });
+
+  updateCategories(cats);
+}
+
+function addNewCategory() {
+  const table = $('#categoryList > tbody');
+  const row = new TableRow();
+  table.appendChild(row.toHTML());
 }
 
 (function init() {
   $('#revenue').value = content.revenue.value;
+  $('#saveCategoriesButton').addEventListener('click', saveCategories);
+  $('#addNewCategoryButton').addEventListener('click', addNewCategory);
+  renderCategories(content.categories);
 })();

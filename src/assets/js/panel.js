@@ -67,6 +67,12 @@ function updateRevenue() {
   socket.emit('revenue:update', { revenue: content.revenue });
 }
 
+function updateCategories() {
+  // en resumen aqui es donde mandas las categorias
+  const categories = [];
+  socket.emit('categories:update', categories);
+}
+
 (function init() {
   $('#revenue').value = content.revenue.value;
 })();

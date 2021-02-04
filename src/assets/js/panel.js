@@ -101,8 +101,8 @@ function updateRevenue() {
 }
 
 function updateCategories(categories) {
-  console.log('the cats', categories);
   socket.emit('categories:update', categories);
+  return window.location.reload();
 }
 
 function createRow(category) {
@@ -133,7 +133,7 @@ function saveCategories() {
     .map(cat => {
       return {
         _id: cat.dataset.id,
-        name: formatText(cat.firstChild.textContent),
+        category: formatText(cat.firstChild.textContent),
         synonyms: cat.lastChild.textContent.split(',').map(formatText)
       };
     });

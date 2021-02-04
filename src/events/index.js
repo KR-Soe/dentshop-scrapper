@@ -32,7 +32,7 @@ class EventManager {
   }
 
   async _updateCategories(payload) {
-    const promises = payload.categories
+    const promises = payload
       .map(category => categoryRepository.saveCategory(category));
 
     await Promise.all(promises);

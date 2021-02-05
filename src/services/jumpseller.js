@@ -65,6 +65,7 @@ const service = {
 
     const categories = await this.fetchOrAddCategory(product.category);
     const productToSave = new Product();
+
     productToSave.name = product.title;
     productToSave.price = pricingService.calculatePriceWithRevenue(product.internetPrice);
     productToSave.stock = product.stock;
@@ -87,6 +88,7 @@ const service = {
         );
       }
     } catch (err) {
+      console.log('err', productToSave.toJSON());
       this.logger.error('this was the payload %j', productToSave.toJSON());
       throw err;
     }

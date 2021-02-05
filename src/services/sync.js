@@ -20,8 +20,6 @@ class SyncService {
     await this.saveNewCategories(categoriesToFetchOrCreate);
     await this.saveNewProducts(productsToUse);
 
-    await productsRepository.deleteAll();
-
     this.socket.emit('sync:notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
     await this.mailService.onSendMail(productsToUse)
     return true;
@@ -76,7 +74,9 @@ class SyncService {
 
       try {
         await jumpsellerService.updateOrAddProduct(productsToUse[i]);
+        await productsRepository.remove(productsToUse[i]);
       } catch(err) {
+        console.log('err', err);
         this.logger.error(err);
       }
     }

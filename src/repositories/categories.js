@@ -16,4 +16,4 @@ const repository = {
   }
 };
 
-module.exports = Object.assign(baseRepository, repository);
+module.exports = Object.assign({}, baseRepository, repository);

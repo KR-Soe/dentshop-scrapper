@@ -4,10 +4,10 @@ const config = require('../config');
 
 const mailer = {
   async onSendMail(products){
-    console.log('products', products)
     const content = products.reduce((i, row) => {
       return i + '<tr><td>' + row.title + '</td></tr>';
     }, '');
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -25,7 +25,7 @@ const mailer = {
         <h1>La sincronizacion de productos ha finalizado exitosamente!</h1>
         <table><thead><tr><th>Productos agregados</th></tr></thead><tbody> ${content} </tbody></table>
       </div>`
-    }
+    };
 
     transporter.sendMail(mailOptions, function(error, info){
       if (error) {

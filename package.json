@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "NODE_ENV=development nodemon src/server.js | pino-pretty",
-    "start:debug": "NODE_ENV=development nodemon --inspect src/server.js | pino-pretty",
+    "start:dev": "NODE_ENV=development nodemon src/server.js | pino-pretty -t",
+    "start:debug": "NODE_ENV=development nodemon --inspect src/server.js | pino-pretty -t",
     "test": "jest ."
   },
   "repository": {

@@ -2,10 +2,10 @@ const http = require('http');
 const config = require('./config');
 const app = require('./app');
 const socketio = require('socket.io');
-const server = http.createServer(app);
-const io = socketio(server);
 const oh = require('./util/objectHolder');
 const EventManager = require('./events');
+const server = http.createServer(app);
+const io = socketio(server);
 
 oh.add('socket', io);
 

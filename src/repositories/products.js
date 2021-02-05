@@ -1,21 +1,26 @@
+const { ObjectId } = require('mongodb');
 const baseRepository = require('./baseRepository');
 const categoriesToFetch = require('../config/normalized-categories.json');
 
-const repository = Object.assign({ collection: 'products' }, baseRepository);
+const repository = {
+  collection: 'products',
+  async findAllByRegisteredCategories() {
+    const db = await this.init();
 
-repository.findAllByRegisteredCategories = async function() {
-  const db = await this.init();
-
-  const rows = await Promise.all(
-    categoriesToFetch.map(option => {
+    const rows = await Promise.all(categoriesToFetch.map(option => {
       const synonyms = option.synonyms
         .map(cat => cat.trim())
         .map(category => ({ category }));
-      return db.collection('products').find({ $or: synonyms }).toArray();
-    })
-  );
 
-  return rows.reduce((arr, next) => arr.concat(next), []);
+      return db.collection(this.collection).find({ $or: synonyms }).toArray();
+    }));
+
+    return rows.reduce((arr, next) => arr.concat(next), []);
+  },
+  async remove(product) {
+    const db = await this.init();
+    return db.collection(this.collection).deleteOne({ _id: ObjectId(product._id) });
+  }
 };
 
-module.exports = repository;
+module.exports = Object.assign({}, baseRepository, repository);

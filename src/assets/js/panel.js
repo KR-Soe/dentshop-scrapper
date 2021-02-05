@@ -62,7 +62,6 @@ const onCategoryNotify = (newData) => {
 };
 
 const socket = io();
-const wrapper = $('#notifications');
 const content = window.serializedContent;
 
 socket.on('sync:notify', onSyncNotify);

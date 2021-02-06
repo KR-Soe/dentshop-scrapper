@@ -34,9 +34,10 @@ class SyncService {
     await this.saveNewCategories(categoriesToFetchOrCreate);
     await this.saveNewProducts(productsToUse);
 
+    disposeListener();
+
     this.socket.emit('sync:notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
     await this.emailService.onSendMail(productsToUse);
-    disposeListener();
 
     return true;
   }

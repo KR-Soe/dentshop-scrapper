@@ -37,7 +37,7 @@ class SyncService {
     disposeListener();
 
     this.socket.emit('sync:notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
-    await this.emailService.onSendMail(productsToUse);
+    await this.emailService.sendEmail(productsToUse);
 
     return true;
   }

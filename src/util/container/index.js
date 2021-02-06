@@ -5,12 +5,12 @@ const CategoryRepository = require('../../repositories/CategoryRepository');
 const TempProductsRepository = require('../../repositories/TempProductsRepository');
 const JumpsellerService = require('../../services/JumpsellerService');
 const CacheService = require('../../services/CacheService');
-const emailService = require('../../services/mailer');
+const EmailService = require('../../services/EmailService');
 const container = require('./ioc');
 
-container.add('emailService', emailService);
 container.add('logger', logger);
 
+container.register('emailService', () => new EmailService());
 container.register('productRepository', () => new ProductRepository());
 container.register('revenueRepository', () => new RevenueRepository());
 container.register('categoryRepository', () => new CategoryRepository());

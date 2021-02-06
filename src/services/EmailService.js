@@ -1,20 +1,24 @@
+const { promisify } = require('util');
 const nodemailer = require('nodemailer');
 const config = require('../config');
 
 
-const mailer = {
-  async onSendMail(products){
-    const content = products.reduce((i, row) => {
-      return i + '<tr><td>' + row.title + '</td></tr>';
-    }, '');
-
-    const transporter = nodemailer.createTransport({
+class EmailService {
+  constructor() {
+    this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: config.mailer.emit.user,
         pass: config.mailer.emit.pass
       }
     });
+    this.send = promisify(this.transporter.sendMail).bind(this.transporter);
+  }
+
+  async sendEmail(products) {
+    const content = products.reduce((i, row) => {
+      return `${i}<tr><td>${row.title}</td></tr>`;
+    }, '');
 
     const mailOptions = {
       from: config.mailer.emit.user,
@@ -27,15 +31,13 @@ const mailer = {
       </div>`
     };
 
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: ' + info.response);
-      }
-    });
+    try {
+      await this.send(mailOptions);
+    } catch (err) {
+      console.error('email no se pudo enviar existosamente por esto', err);
+    }
   }
-};
+}
 
 
-module.exports = mailer;
+module.exports = EmailService;

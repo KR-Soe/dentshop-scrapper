@@ -1,46 +1,44 @@
-const syncService = require('../services/sync');
-const revenueRepository = require('../repositories/revenue');
-const categoryRepository = require('../repositories/categories');
-const mailService = require('../services/mailer');
+const container = require('../util/container');
+const EventManager = require('./EventManager');
+const SyncService = require('../services/SyncService');
 
 
-class EventManager {
-  constructor(socket, logger) {
-    this.socket = socket;
-    this.logger = logger;
+const createSocketHandler = (socket) => {
+  const logger = container.get('logger');
+  const emailService = container.get('emailService');
+  const revenueRepository = container.get('revenueRepository');
+  const categoryRepository = container.get('categoryRepository');
+  const productRepository = container.get('productRepository');
+  const jumpsellerService = container.get('jumpsellerService');
+  const cacheService = container.get('cacheService');
 
-    this._startSync = this._startSync.bind(this);
-    this._updateRevenue = this._updateRevenue.bind(this);
-    this._updateCategories = this._updateCategories.bind(this);
-  }
+  logger.info('a user connected');
 
-  connect() {
-    this.socket.on('sync:start', this._startSync);
-    this.socket.on('revenue:update', this._updateRevenue);
-    this.socket.on('categories:update', this._updateCategories);
-  }
+  const syncService = new SyncService({
+    logger,
+    socket,
+    emailService,
+    productRepository,
+    jumpsellerService,
+    categoryRepository,
+    cacheService
+  });
 
-  async _startSync() {
-    this.logger.info('starting with the sync !!!');
-    const result = await syncService(this.logger, this.socket, mailService);
-    this.logger.info(result);
-  }
+  const eventManager = new EventManager({
+    socket,
+    logger,
+    syncService,
+    revenueRepository,
+    categoryRepository,
+    mailService: emailService,
+  });
 
-  async _updateRevenue(payload) {
-    const { revenue } = payload;
-    await revenueRepository.saveRevenue(revenue);
-    this.socket.emit('revenue:notify', { message: 'El valor fue actualizado exitosamente' });
-  }
+  eventManager.connect();
 
-  async _updateCategories(payload) {
-    const promises = payload
-      .map(category => categoryRepository.saveCategory(category));
-
-    await Promise.all(promises);
-    const results = await categoryRepository.findAll();
-    this.socket.emit('categories:notify', results);
-  }
-}
+  socket.on('disconnect', () => {
+    logger.info('user disconnected');
+  });
+};
 
 
-module.exports = EventManager;
+module.exports = createSocketHandler;

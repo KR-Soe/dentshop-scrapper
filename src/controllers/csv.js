@@ -1,6 +1,6 @@
 const { CSV, Row } = require('../util/csv');
 const parseCSVContents = require('../util/csvparser');
-const productsRepository = require('../repositories/products');
+// const productsRepository = require('../repositories/products');
 
 async function controller(req, res) {
   const importedProducts = await parseCSVContents(req.file.path);
@@ -16,10 +16,11 @@ async function controller(req, res) {
 }
 
 async function exportScrappedRows(importedRows) {
-  const products = await productsRepository.findAll();
+  // const products = await productsRepository.findAll();
 
-  const scrappedProducts = products.reduce((arr, next) => arr.concat(next), []);
-  return scrappedProducts.map(collectionToCSVRow);
+  // const scrappedProducts = products.reduce((arr, next) => arr.concat(next), []);
+  // return scrappedProducts.map(collectionToCSVRow);
+  return [];
 }
 
 function collectionToCSVRow(element) {

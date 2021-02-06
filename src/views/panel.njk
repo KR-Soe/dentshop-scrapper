@@ -21,13 +21,13 @@
 {% block content %}
     <div class="tabs is-centered">
         <ul id="tabList">
-            <li data-option="csv" class="is-active"><a href="javascript: useTab('csv');">CSV</a></li>
-            <li data-option="api"><a href="javascript: useTab('api');">API</a></li>
+            {# <li data-option="csv" class="is-active"><a href="javascript: useTab('csv');">CSV</a></li> #}
+            <li data-option="api" class="is-active"><a href="javascript: useTab('api');">API</a></li>
             <li data-option="manager"><a href="javascript: useTab('manager')">Administradores</a></li>
         </ul>
     </div>
 
-    <div id="csv" data-container>
+    {# <div id="csv" data-container>
         <form class="form" action="/api/csv" enctype="multipart/form-data" method="post">
             <div class="field">
                 <label class="label" for="file">Subir archivo CSV</label>
@@ -37,9 +37,9 @@
                 <input type="submit" class="button is-primary" value="Subir" />
             </div>
         </form>
-    </div>
+    </div> #}
 
-    <div id="api" data-container class="is-hidden">
+    <div id="api" data-container>
         <div class="form">
             <div class="field">
                 <label class="label"></label>

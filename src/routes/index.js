@@ -1,13 +1,16 @@
+const router = require('express').Router();
 const authMiddleware = require('../middleware/authentication');
 const apiRoute = require('./api');
+const container = require('../util/container');
 const panelController = require('../controllers/panel');
 
-function homeController(_, res) {
-  res.render('index.njk');
-}
+const handlePanel = panelController(
+  container.get('categoryRepository'),
+  container.get('revenueRepository')
+);
 
-module.exports = (app) => {
-  app.get('/', homeController);
-  app.get('/panel', authMiddleware, panelController);
-  app.use('/api', apiRoute);
-};
+router.get('/', (_, res) => res.render('index.njk'));
+router.use('/api', apiRoute);
+router.get('/panel', authMiddleware, handlePanel);
+
+module.exports = router;

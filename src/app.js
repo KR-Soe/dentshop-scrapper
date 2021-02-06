@@ -3,13 +3,12 @@ const express = require('express');
 const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const pino = require('pino');
+const container = require('./util/container');
 const oh = require('./util/objectHolder');
-const config = require('./config');
 const app = express();
 
 const viewsPath = path.resolve(__dirname, 'views');
-const logger = pino({ level: config.logger.logLevel });
+const logger = container.get('logger');
 
 oh.add('logger', logger);
 app.set('views', viewsPath);
@@ -26,11 +25,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use((req, _, next) => {
-  req.logger = logger;
-  next();
-});
-
-require('./routes')(app);
+app.use(require('./middleware/injectLogger')(logger));
+app.use(require('./routes'));
 
 module.exports = app;

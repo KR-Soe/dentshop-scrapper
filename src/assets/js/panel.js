@@ -57,7 +57,6 @@ const onRevenueNotify = (notification) => {
 };
 
 const onCategoryNotify = (newData) => {
-  console.log('categories updated');
   renderCategories(newData);
 };
 

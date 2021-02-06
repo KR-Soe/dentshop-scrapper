@@ -10,7 +10,7 @@ insert_final_newline = true
 semi = false
 singleQuote = true
 
-[*.{json,js}]
+[*.{json,js,mjs}]
 indent_size = 2
 
 [Makefile]

@@ -2,7 +2,7 @@ class SyncService {
   constructor({
     logger,
     socket,
-    mailService,
+    emailService,
     productRepository,
     jumpsellerService,
     categoryRepository,
@@ -10,7 +10,7 @@ class SyncService {
   }) {
     this.logger = logger;
     this.socket = socket;
-    this.mailService = mailService;
+    this.emailService = emailService;
     this.productsRepository = productRepository;
     this.jumpsellerService = jumpsellerService;
     this.categoryRepository = categoryRepository;
@@ -35,7 +35,7 @@ class SyncService {
     await this.saveNewProducts(productsToUse);
 
     this.socket.emit('sync:notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
-    await this.mailService.onSendMail(productsToUse);
+    await this.emailService.onSendMail(productsToUse);
     disposeListener();
 
     return true;

@@ -26,7 +26,8 @@ async function main() {
     cacheService
   });
 
-  syncService.startSync();
+  await syncService.startSync();
+  process.exit(0);
 }
 
 main();

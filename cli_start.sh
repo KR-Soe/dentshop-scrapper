@@ -9,4 +9,10 @@ export MAIL_OWNER=dospuntodos2021@gmail.com
 export MAIL_PASSWORD=dospuntodos20212022
 export MAIL_USER=dospuntodos2021@gmail.com
 
-node src/cli.js
+directory_name=$(dirname $BASH_SOURCE)
+format_date=$(date +"%Y-%m-%d")
+log_name="/tmp/$format_date-log.log"
+
+cd $directory_name
+
+node src/cli.js > $log_name

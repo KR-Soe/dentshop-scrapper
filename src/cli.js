@@ -3,7 +3,7 @@ const container = require('./util/container');
 const SyncService = require('./services/SyncService');
 
 async function main() {
-  await waitFor(1000);
+  await waitFor(3000);
 
   const logger = container.get('logger');
   const emailService = container.get('emailService');

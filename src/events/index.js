@@ -11,6 +11,7 @@ const createSocketHandler = (socket) => {
   const productRepository = container.get('productRepository');
   const jumpsellerService = container.get('jumpsellerService');
   const cacheService = container.get('cacheService');
+  const pricingService = container.get('pricingService');
 
   logger.info('a user connected');
 
@@ -30,7 +31,7 @@ const createSocketHandler = (socket) => {
     syncService,
     revenueRepository,
     categoryRepository,
-    mailService: emailService,
+    pricingService
   });
 
   eventManager.connect();

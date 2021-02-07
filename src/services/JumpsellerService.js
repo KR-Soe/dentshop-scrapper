@@ -2,8 +2,8 @@ const request = require('./request');
 const config = require('../config');
 const requestpool = require('../util/requestpool');
 const Product = require('../dto/product');
-const pricingService = require('./pricing');
 const { apiLogin, authToken } = config.jumpSeller;
+const { prop } = require('../util/funcs');
 
 const urls = {
   PRODUCTS: `https://api.jumpseller.com/v1/products.json?login=${apiLogin}&authtoken=${authToken}`,
@@ -15,10 +15,11 @@ const urls = {
 
 
 class JumpsellerService {
-  constructor(logger, tempProductsRepository, cacheService) {
+  constructor(logger, tempProductsRepository, cacheService, pricingService) {
     this.logger = logger;
     this.tempProductsRepository = tempProductsRepository;
     this.cacheService = cacheService;
+    this.pricingService = pricingService;
     this.listeners = [];
   }
 
@@ -49,7 +50,7 @@ class JumpsellerService {
       this._notify(message);
       const url = `${urls.PRODUCTS}&limit=${PRODUCTS_PER_PAGE}&page=${i}`;
       const results = await requestpool.add(() => request.get(url).json());
-      products = products.concat(results.map(res => res.product));
+      products = products.concat(results.map(prop('product')));
     }
 
     return products;
@@ -75,7 +76,7 @@ class JumpsellerService {
 
     if (cache.has(product.title)) {
       const cachedProduct = cache.get(product.title);
-      cachedProduct.price = pricingService.calculatePriceWithRevenue(product.internetPrice);
+      cachedProduct.price = this.pricingService.calculatePriceWithRevenue(product.internetPrice);
       cachedProduct.stock = product.stock;
       cachedProduct.description = product.description;
       return this._updateProduct(cachedProduct);
@@ -85,7 +86,7 @@ class JumpsellerService {
     const productToSave = new Product();
 
     productToSave.name = product.title;
-    productToSave.price = pricingService.calculatePriceWithRevenue(product.internetPrice);
+    productToSave.price = this.pricingService.calculatePriceWithRevenue(product.internetPrice);
     productToSave.stock = product.stock;
     productToSave.sku = product.sku;
     productToSave.brand = product.brand;

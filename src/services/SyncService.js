@@ -72,8 +72,7 @@ class SyncService {
         message: `procesando posible categoria ${i + 1} de ${totalCategories}`,
         updateLastNotification: true
       });
-      const cat = categoriesToFetchOrCreate[i];
-      await this.jumpsellerService.fetchOrAddCategory(cat);
+      await this.jumpsellerService.fetchOrAddCategory(categoriesToFetchOrCreate[i]);
     }
 
     this.socket.emit('sync:notify', { message: 'categorias guardadas' });

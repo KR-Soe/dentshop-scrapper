@@ -1,11 +1,18 @@
 class EventManager {
-  constructor({ socket, logger, revenueRepository, categoryRepository, mailService, syncService }) {
+  constructor({
+    socket,
+    logger,
+    revenueRepository,
+    categoryRepository,
+    syncService,
+    pricingService
+  }) {
     this.socket = socket;
     this.logger = logger;
     this.revenueRepository = revenueRepository;
     this.categoryRepository = categoryRepository;
-    this.mailService = mailService;
     this.syncService = syncService;
+    this.pricingService = pricingService;
 
     this._startSync = this._startSync.bind(this);
     this._updateRevenue = this._updateRevenue.bind(this);
@@ -27,6 +34,7 @@ class EventManager {
   async _updateRevenue(payload) {
     const { revenue } = payload;
     await this.revenueRepository.save(revenue);
+    this.pricingService.setRevenue(revenue);
     this.socket.emit('revenue:notify', { message: 'El valor fue actualizado exitosamente' });
   }
 

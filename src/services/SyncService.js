@@ -65,6 +65,7 @@ class SyncService {
     this.logger.info('initializing fetch/creation of categories');
 
     const totalCategories = categoriesToFetchOrCreate.length;
+    this.logger.info('there are %d categories to process', totalCategories);
 
     for (let i = 0; i < totalCategories; i++) {
       this.logger.debug('processing category %d of %d', i + 1, totalCategories);
@@ -80,6 +81,8 @@ class SyncService {
 
   async saveNewProducts(productsToUse) {
     const totalProducts = productsToUse.length;
+
+    this.logger.info('There are %d products to process', totalProducts);
 
     for (let i = 0; i < totalProducts; i++) {
       this.logger.debug('processing product %d of %d', i + 1, totalProducts);

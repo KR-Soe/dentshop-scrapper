@@ -1,9 +1,10 @@
 const { waitFor } = require('./util/timers');
 const container = require('./util/container');
 const SyncService = require('./services/SyncService');
+const config = require('./config');
 
 async function main() {
-  await waitFor(3000);
+  await waitFor(1000);
 
   const logger = container.get('logger');
   const emailService = container.get('emailService');
@@ -11,6 +12,8 @@ async function main() {
   const categoryRepository = container.get('categoryRepository');
   const cacheService = container.get('cacheService');
   const jumpsellerService = container.get('jumpsellerService');
+
+  logger.info('this is the cli configuration %j', config);
 
   const socket = {
     emit: () => null

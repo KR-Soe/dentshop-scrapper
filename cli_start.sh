@@ -11,9 +11,10 @@ export MAIL_USER=dospuntodos2021@gmail.com
 
 directory_name=$(dirname $BASH_SOURCE)
 format_date=$(date +"%Y-%m-%d")
-log_name="/tmp/$format_date-log.log"
+logfile="/tmp/$format_date-log.log"
+errorfile="/tmp/$format_date-errors.log"
 
 cd $directory_name
 
-node src/cli.js | ./node_modules/.bin/pino-pretty -t > $log_name
+node src/cli.js | ./node_modules/.bin/pino-pretty -t > $logfile 2> $errorfile
 # node src/cli.js | ./node_modules/.bin/pino-pretty -t

@@ -7,6 +7,12 @@
         margin: auto;
         padding: 1em;
     }
+
+    .fix-input {
+        display: inline-block;
+        position: relative;
+        top: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -21,29 +27,20 @@
 {% block content %}
     <div class="tabs is-centered">
         <ul id="tabList">
-            {# <li data-option="csv" class="is-active"><a href="javascript: useTab('csv');">CSV</a></li> #}
-            <li data-option="api" class="is-active"><a href="javascript: useTab('api');">API</a></li>
-            <li data-option="manager"><a href="javascript: useTab('manager')">Administradores</a></li>
+            <li data-option="api" class="is-active">
+                <a data-section="api">API</a>
+            </li>
+            <li data-option="manager">
+                <a data-section="manager">Administradores</a>
+            </li>
         </ul>
     </div>
-
-    {# <div id="csv" data-container>
-        <form class="form" action="/api/csv" enctype="multipart/form-data" method="post">
-            <div class="field">
-                <label class="label" for="file">Subir archivo CSV</label>
-                <input id="file" name="jumpseller" type="file" />
-            </div>
-            <div class="field">
-                <input type="submit" class="button is-primary" value="Subir" />
-            </div>
-        </form>
-    </div> #}
 
     <div id="api" data-container>
         <div class="form">
             <div class="field">
                 <label class="label"></label>
-                <button class="button is-primary" onclick="sync()">Sincronizar Productos</button>
+                <button id="sync" class="button is-primary">Sincronizar Productos</button>
             </div>
             <div id="notifications" class="messages">
             </div>
@@ -54,8 +51,8 @@
         <div class="form">
             <div class="field">
                 <label for="revenue" class="label">Ganancia Actual</label>
-                <input id="revenue" type="text" class="control" />
-                <button class="button is-primary" onclick="updateRevenue()">Actualizar ganancia</button>
+                <input id="revenue" type="text" class="control fix-input" />
+                <button id="updateRevenue" class="button is-primary">Actualizar ganancia</button>
                 <div id="revenueNotification" class="notification is-info is-hidden"></div>
             </div>
         </div>

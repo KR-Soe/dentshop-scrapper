@@ -67,7 +67,10 @@ socket.on('sync:notify', onSyncNotify);
 socket.on('revenue:notify', onRevenueNotify);
 socket.on('categories:notify', onCategoryNotify);
 
-function useTab(option) {
+function useTab(evt) {
+  evt.preventDefault();
+  const option = evt.target.dataset.section;
+
   Array.from($$('#tabList > li'))
     .forEach(function(item) {
       item.classList.remove('is-active');
@@ -148,5 +151,8 @@ function addNewCategory() {
   $('#revenue').value = content.revenue.value;
   $('#saveCategoriesButton').addEventListener('click', saveCategories);
   $('#addNewCategoryButton').addEventListener('click', addNewCategory);
+  $('#sync').addEventListener('click', sync);
+  $('#updateRevenue').addEventListener('click', updateRevenue);
+  Array.from($$('[data-section]')).forEach(element => element.addEventListener('click', useTab));
   renderCategories(content.categories);
 })();

@@ -36,8 +36,9 @@ class SyncService {
 
     disposeListener();
 
+    const platformsCount = this.jumpsellerService.platformsCount;
     this.socket.emit('sync:notify', { message: 'tarea terminada, por favor revisa los productos y categorias actualizados' });
-    await this.emailService.sendEmail(productsToUse);
+    await this.emailService.sendEmail(productsToUse, platformsCount);
 
     return true;
   }

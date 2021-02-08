@@ -4,9 +4,10 @@ import re
 import json
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
-from utils.connection import make_mongo_conn
-from utils.parser import text_to_number
-from dto.product import Product
+from .utils.connection import make_mongo_conn
+from .utils.parser import text_to_number
+from .dto.product import Product
+from .utils.pricecalculator import PriceCalculator
 
 
 class DentalLaval(scrapy.Spider):
@@ -14,6 +15,7 @@ class DentalLaval(scrapy.Spider):
 
     def start_requests(self):
         self.connection = make_mongo_conn()
+        self.calculator = PriceCalculator(self.connection)
 
         start_urls = [
             "https://www.dental-laval.cl/collections/insumos-dentales",
@@ -56,6 +58,7 @@ class DentalLaval(scrapy.Spider):
         output = Product()
         output.title = product_title
         output.price = int(internet_price)
+        output.revenue_price = self.calculator.calculate_price_with_revenue(output.price)
         output.stock = int(stock)
         output.sku = sku
         output.image = image
@@ -65,7 +68,7 @@ class DentalLaval(scrapy.Spider):
         output.description = description
         output.add_category(category)
 
-        self.connection.dentshop.products.insert_one(output.to_serializable())
+        self.connection.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

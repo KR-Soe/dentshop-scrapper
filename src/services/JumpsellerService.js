@@ -21,6 +21,7 @@ class JumpsellerService {
     this.cacheService = cacheService;
     this.pricingService = pricingService;
     this.listeners = [];
+    this.platformsCount = {};
   }
 
   addListener(listener) {
@@ -33,6 +34,14 @@ class JumpsellerService {
 
   _notify(message) {
     this.listeners.forEach((listener) => listener(message));
+  }
+
+  _addPlatformCount(platform) {
+    if (!this.platformsCount[platform]) {
+      this.platformsCount[platform] = 0;
+    }
+
+    this.platformsCount[platform] += 1;
   }
 
   async findAllProducts() {
@@ -73,12 +82,17 @@ class JumpsellerService {
 
   async updateOrAddProduct(product) {
     const cache = this.cacheService.get('product');
+    const newPrice = product.revenuePrice ?
+      product.revenuePrice :
+      this.pricingService.calculatePriceWithRevenue(product.internetPrice);
 
     if (cache.has(product.title)) {
       const cachedProduct = cache.get(product.title);
-      cachedProduct.price = this.pricingService.calculatePriceWithRevenue(product.internetPrice);
+      cachedProduct.price = newPrice;
       cachedProduct.stock = product.stock;
       cachedProduct.description = product.description;
+      this._addPlatformCount(product.platformSource);
+
       return this._updateProduct(cachedProduct);
     }
 
@@ -86,15 +100,17 @@ class JumpsellerService {
     const productToSave = new Product();
 
     productToSave.name = product.title;
-    productToSave.price = this.pricingService.calculatePriceWithRevenue(product.internetPrice);
+    productToSave.price = newPrice;
     productToSave.stock = product.stock;
     productToSave.sku = product.sku;
     productToSave.brand = product.brand;
     productToSave.categories = categories;
     productToSave.description = product.description;
+    productToSave.barcode = product.referUrl
 
     try {
       const retrievedProduct = await this._addProduct(productToSave.toJSON());
+      this._addPlatformCount(product.platformSource);
       const newProduct = retrievedProduct.product;
       await this.tempProductsRepository.save(newProduct);
       cache.set(newProduct.name, product);

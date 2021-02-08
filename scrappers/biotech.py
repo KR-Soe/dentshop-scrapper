@@ -1,12 +1,11 @@
 import re
-import json
 import scrapy
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
-from utils.connection import make_mongo_conn
-from utils.parser import text_to_number
-from dto.product import Product
-
+from .utils.connection import make_mongo_conn
+from .utils.parser import text_to_number
+from .dto.product import Product
+from .utils.pricecalculator import PriceCalculator
 
 class Biotech(scrapy.Spider):
     name = 'biotech'
@@ -14,19 +13,27 @@ class Biotech(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.categories = {}
+        self.base_url = 'https://biotechchile.cl'
+        self.calculator = PriceCalculator(self.connection)
 
-        with open('./scrappers/inputs/biotech.json', 'r') as file:
-            urls = json.load(file)
+        yield Request(self.base_url, callback=self._fetch_categories)
 
-        for url in urls:
-            self._add_category(url)
+    def _fetch_categories(self, response):
+        links = [
+            f'{self.base_url}{link}' for link in response.css('.container-fluid.fondo_dos.header-desktop .menu-item-wrap a::attr(href)').getall()
+        ]
+
+        for link in links:
+            self._add_category(link)
 
             for i in range(1, 5):
-                new_url = f'{url}/page/{i}'
+                new_url = f'{link}/page/{i}'
                 yield Request(new_url, callback=self._parse_list)
 
     def _add_category(self, url):
-        category_name, pk = url.split('/')[-1].split('-')
+        tokens = url.split('/')[-1].split('-')
+        pk = tokens.pop()
+        category_name = '-'.join(tokens)
         self.categories[pk] = category_name
 
     def _get_category_from_url(self, url):
@@ -51,6 +58,7 @@ class Biotech(scrapy.Spider):
         output = Product()
         output.title = title
         output.price = text_to_number(price)
+        output.revenue_price = self.calculator.calculate_price_with_revenue(output.price)
         output.refer_url = response.url
         output.image = image
         output.brand = ''
@@ -60,7 +68,7 @@ class Biotech(scrapy.Spider):
         output.stock = text_to_number(stock)
         output.add_category(category)
 
-        self.connection.dentshop.products.insert_one(output.to_serializable())
+        self.connection.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

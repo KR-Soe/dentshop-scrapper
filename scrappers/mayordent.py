@@ -1,13 +1,12 @@
-import json
-import re
 import scrapy
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
-from utils.connection import make_mongo_conn
-from utils.parser import text_to_number
-from dto.product import Product
+from .utils.connection import make_mongo_conn
+from .utils.parser import text_to_number
+from .dto.product import Product
+from .utils.pricecalculator import PriceCalculator
 
 
 class Mayordent(scrapy.Spider):
@@ -15,6 +14,7 @@ class Mayordent(scrapy.Spider):
 
     def start_requests(self):
         self.connection = make_mongo_conn()
+        self.calculator = PriceCalculator(self.connection)
 
         for page_number in range(1, 100):
             url = f'https://www.mayordent.cl/page/{page_number}/?s=+&post_type=product'
@@ -46,6 +46,7 @@ class Mayordent(scrapy.Spider):
         output = Product()
         output.title = product_title
         output.price = int(internet_price)
+        output.revenue_price = self.calculator.calculate_price_with_revenue(output.price)
         output.stock = int(stock)
         output.sku = sku or ''
         output.image = image or 'sin imagen'
@@ -57,7 +58,7 @@ class Mayordent(scrapy.Spider):
         for cat in categories:
             output.add_category(cat)
 
-        self.connection.dentshop.products.insert_one(output.to_serializable())
+        self.connection.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

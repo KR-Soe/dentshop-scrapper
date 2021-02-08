@@ -1,11 +1,11 @@
-import re
 import scrapy
 import json
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
-from utils.connection import make_mongo_conn
-from utils.parser import text_to_number
-from dto.product import Product
+from .utils.connection import make_mongo_conn
+from .utils.parser import text_to_number
+from .dto.product import Product
+from .utils.pricecalculator import PriceCalculator
 
 
 class Expressdent(scrapy.Spider):
@@ -13,6 +13,8 @@ class Expressdent(scrapy.Spider):
 
     def start_requests(self):
         self.connection = make_mongo_conn()
+        self.calculator = PriceCalculator(self.connection)
+
         with open('./scrappers/inputs/expressdent.json', 'r') as file:
             start_urls = json.load(file)
 
@@ -27,7 +29,6 @@ class Expressdent(scrapy.Spider):
 
     def _parse_detail(self, response):
         product_title = response.css('.single-post-title.product_title.entry-title::text').get()
-        normal_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
         internet_price = text_to_number(response.css('.summary.entry-summary > .price > span > bdi::text').get())
         stock = text_to_number(response.css('.stock.in-stock::text').get())
         sku = response.css('.sku_wrapper > .sku::text').get()
@@ -38,6 +39,7 @@ class Expressdent(scrapy.Spider):
         output = Product()
         output.title = product_title
         output.price = int(internet_price)
+        output.revenue_price = self.calculator.calculate_price_with_revenue(output.price)
         output.stock = int(stock)
         output.sku = sku
         output.image = image or 'sin imagen'
@@ -49,7 +51,7 @@ class Expressdent(scrapy.Spider):
         for category in categories:
             output.add_category(category)
 
-        self.connection.dentshop.products.insert_one(output.to_serializable())
+        self.connection.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

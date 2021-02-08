@@ -9,6 +9,7 @@ class Product:
         self.image = None
         self.refer_url = None
         self.platform_source = None
+        self.revenue_price = None
         self._categories = []
         self._missing_field = None
 
@@ -44,6 +45,7 @@ class Product:
         return {
             'title': self.title,
             'internetPrice': int(self.price),
+            'revenuePrice': int(self.revenue_price),
             'stock': int(self.stock),
             'sku': self.sku,
             'category': self._categories,

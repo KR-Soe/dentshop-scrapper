@@ -3,8 +3,9 @@ import re
 import scrapy
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
-from utils.connection import make_mongo_conn
-from dto.product import Product
+from .utils.connection import make_mongo_conn
+from .dto.product import Product
+from .utils.pricecalculator import PriceCalculator
 
 
 class Clandent(scrapy.Spider):
@@ -12,6 +13,7 @@ class Clandent(scrapy.Spider):
 
     def start_requests(self):
         self.connection = make_mongo_conn()
+        self.calculator = PriceCalculator(self.connection)
 
         with open('./scrappers/inputs/clandent.json', 'r') as file:
             categories = json.load(file)
@@ -42,14 +44,15 @@ class Clandent(scrapy.Spider):
         output.brand = brand or ''
         output.title = name or 'sin nombre'
         output.price = price
+        output.revenue_price = self.calculator.calculate_price_with_revenue(price)
         output.refer_url = response.url
-        output.description = description
+        output.description = description or ''
         output.sku = sku
         output.image = image
         output.stock = stock or 0
         output.add_category(category)
 
-        self.connection.dentshop.products.insert_one(output.to_serializable())
+        self.connection.products.insert_one(output.to_serializable())
 
 
 process = CrawlerProcess(settings={})

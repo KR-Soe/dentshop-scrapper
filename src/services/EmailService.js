@@ -15,10 +15,16 @@ class EmailService {
     this.send = promisify(this.transporter.sendMail).bind(this.transporter);
   }
 
-  async sendEmail(products) {
-    const content = products.reduce((i, row) => {
-      return `${i}<tr><td>${row.title}</td></tr>`;
+  async sendEmail(products, platformsCount) {
+    const newProductsContent = products.reduce((acc, row) => {
+      return acc + `<tr><td>${row.title}</td></tr>`;
     }, '');
+
+    const updatedProductsContent = Object.entries(platformsCount)
+      .reduce((acc, entry) => {
+        const [key, value] = entry;
+        return acc + `<tr><td>${key}</td><td>${value}</td><tr>`;
+      }, '');
 
     const mailOptions = {
       from: config.mailer.emit.user,
@@ -27,7 +33,26 @@ class EmailService {
       html: `
       <div>
         <h1>La sincronizacion de productos ha finalizado exitosamente!</h1>
-        <table><thead><tr><th>Productos agregados</th></tr></thead><tbody> ${content} </tbody></table>
+        <table>
+          <thead>
+            <tr>
+              <th>Productos agregados</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${newProductsContent}
+          </tbody>
+        </table>
+
+        <table>
+          <thead>
+            <th>Plataforma</th>
+            <th>Cantidad de productos procesados</th>
+          </thead>
+          <tbody>
+            ${updatedProductsContent}
+          </tbody>
+        </table>
       </div>`
     };
 

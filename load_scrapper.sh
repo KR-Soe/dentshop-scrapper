@@ -6,7 +6,7 @@ execute_scrapper() {
     source ~/.envs/dentshop/bin/activate
     directory_name=$(dirname $BASH_SOURCE)
     cd $directory_name
-    python -m scrappers.$1.py
+    python -m scrappers.$1
 }
 
 for i in "${scrappers[@]}"

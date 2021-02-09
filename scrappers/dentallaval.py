@@ -2,6 +2,7 @@ import json
 import scrapy
 import re
 import json
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from .utils.connection import make_mongo_conn
@@ -16,6 +17,7 @@ class DentalLaval(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         start_urls = [
             "https://www.dental-laval.cl/collections/insumos-dentales",
@@ -66,6 +68,7 @@ class DentalLaval(scrapy.Spider):
         output.platform_source = 'dental-laval'
         output.brand = ''
         output.description = description
+        output.created_at = self.now
         output.add_category(category)
 
         self.connection.products.insert_one(output.to_serializable())

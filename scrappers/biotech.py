@@ -1,5 +1,6 @@
 import re
 import scrapy
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from .utils.connection import make_mongo_conn
@@ -15,6 +16,7 @@ class Biotech(scrapy.Spider):
         self.categories = {}
         self.base_url = 'https://biotechchile.cl'
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         yield Request(self.base_url, callback=self._fetch_categories)
 
@@ -66,6 +68,7 @@ class Biotech(scrapy.Spider):
         output.sku = ''
         output.platform_source = 'biotech'
         output.stock = text_to_number(stock)
+        output.created_at = self.now
         output.add_category(category)
 
         self.connection.products.insert_one(output.to_serializable())

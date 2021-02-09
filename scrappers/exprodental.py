@@ -1,6 +1,7 @@
 import json
 import re
 import scrapy
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from .utils.connection import make_mongo_conn
@@ -14,6 +15,7 @@ class Exprodental(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         with open('./scrappers/inputs/exprodental.json', 'r') as file:
             urls = json.load(file)
@@ -56,6 +58,7 @@ class Exprodental(scrapy.Spider):
         output.image = f'https://www.exprodental.cl/{image}'
         output.refer_url = response.url
         output.platform_source = 'exprodental'
+        output.created_at = self.now
         output.add_category(category)
 
         self.connection.products.insert_one(output.to_serializable())

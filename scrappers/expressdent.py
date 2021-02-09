@@ -1,5 +1,6 @@
 import scrapy
 import json
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from .utils.connection import make_mongo_conn
@@ -14,6 +15,7 @@ class Expressdent(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         with open('./scrappers/inputs/expressdent.json', 'r') as file:
             start_urls = json.load(file)
@@ -47,6 +49,7 @@ class Expressdent(scrapy.Spider):
         output.description = description or ''
         output.brand = ''
         output.platform_source = 'expressdent'
+        output.created_at = self.now
 
         for category in categories:
             output.add_category(category)

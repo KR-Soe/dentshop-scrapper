@@ -1,4 +1,5 @@
 import scrapy
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from scrapy.exceptions import CloseSpider
@@ -15,6 +16,7 @@ class Mayordent(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         for page_number in range(1, 100):
             url = f'https://www.mayordent.cl/page/{page_number}/?s=+&post_type=product'
@@ -54,6 +56,7 @@ class Mayordent(scrapy.Spider):
         output.platform_source = 'mayordent'
         output.brand = brand
         output.description = ''
+        output.created_at = self.now
 
         for cat in categories:
             output.add_category(cat)

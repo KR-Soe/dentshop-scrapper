@@ -8,6 +8,7 @@ export APP_PORT=9090
 export MAIL_OWNER=dospuntodos2021@gmail.com
 export MAIL_PASSWORD=dospuntodos20212022
 export MAIL_USER=dospuntodos2021@gmail.com
+export SYNC_FILTER_PRODUCTS=off
 
 directory_name=$(dirname $BASH_SOURCE)
 format_date=$(date +"%Y-%m-%d")

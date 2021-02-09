@@ -10,6 +10,7 @@ class Product:
         self.refer_url = None
         self.platform_source = None
         self.revenue_price = None
+        self.created_at = None
         self._categories = []
         self._missing_field = None
 
@@ -53,5 +54,6 @@ class Product:
             'description': self.description.strip(),
             'image': self.image,
             'referUrl': self.refer_url,
-            'platformSource': self.platform_source
+            'platformSource': self.platform_source,
+            'createdAt': self.created_at
         }

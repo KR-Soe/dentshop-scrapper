@@ -8,5 +8,6 @@ export APP_PORT=9090
 export MAIL_OWNER=dospuntodos2021@gmail.com
 export MAIL_PASSWORD=dospuntodos20212022
 export MAIL_USER=dospuntodos2021@gmail.com
+export SYNC_FILTER_PRODUCTS=off
 
 ./node_modules/.bin/pm2 start src/server.js

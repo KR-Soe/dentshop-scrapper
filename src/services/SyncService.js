@@ -6,7 +6,8 @@ class SyncService {
     productRepository,
     jumpsellerService,
     categoryRepository,
-    cacheService
+    cacheService,
+    filterProductsByCategories
   }) {
     this.logger = logger;
     this.socket = socket;
@@ -15,6 +16,7 @@ class SyncService {
     this.jumpsellerService = jumpsellerService;
     this.categoryRepository = categoryRepository;
     this.cacheService = cacheService;
+    this.filterProductsByCategories = filterProductsByCategories || false;
   }
 
   async startSync() {
@@ -24,8 +26,16 @@ class SyncService {
         updateLastNotification: true
       })
     });
-    const categoriesToFetch = await this.categoryRepository.findAll();
-    const productsToUse = await this.productsRepository.findByRegisteredCategories(categoriesToFetch);
+
+    let productsToUse;
+
+    if (this.filterProductsByCategories) {
+      const categoriesToFetch = await this.categoryRepository.findAll();
+      productsToUse = await this.productsRepository.findByRegisteredCategories(categoriesToFetch);
+    } else {
+      productsToUse = await this.productsRepository.findAll();
+    }
+
     const categoriesToFetchOrCreate = productsToUse.map(product => product.category);
 
     this.logger.info('trying to syncronize the products on jumpseller');

@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+const BaseRepository = require('./BaseRepository');
 
 
 class ProductRepository extends BaseRepository {

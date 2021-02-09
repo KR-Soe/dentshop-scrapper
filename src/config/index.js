@@ -18,6 +18,9 @@ const config = {
     to: {
       user: process.env.MAIL_USER ||'dentshop@mailinator.com'
     }
+  },
+  features: {
+    syncFilterProducts: (process.env.SYNC_FILTER_PRODUCTS || 'off') === 'on'
   }
 };
 

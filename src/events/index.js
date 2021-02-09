@@ -1,3 +1,4 @@
+const config = require('../config');
 const container = require('../util/container');
 const EventManager = require('./EventManager');
 const SyncService = require('../services/SyncService');
@@ -22,7 +23,8 @@ const createSocketHandler = (socket) => {
     productRepository,
     jumpsellerService,
     categoryRepository,
-    cacheService
+    cacheService,
+    filterProductsByCategories: config.features.syncFilterProducts
   });
 
   const eventManager = new EventManager({

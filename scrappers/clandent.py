@@ -1,6 +1,7 @@
 import json
 import re
 import scrapy
+from datetime import datetime
 from scrapy.http import Request
 from scrapy.crawler import CrawlerProcess
 from .utils.connection import make_mongo_conn
@@ -14,6 +15,7 @@ class Clandent(scrapy.Spider):
     def start_requests(self):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
+        self.now = datetime.now().isoformat()
 
         with open('./scrappers/inputs/clandent.json', 'r') as file:
             categories = json.load(file)
@@ -50,6 +52,7 @@ class Clandent(scrapy.Spider):
         output.sku = sku
         output.image = image
         output.stock = stock or 0
+        output.created_at = self.now
         output.add_category(category)
 
         self.connection.products.insert_one(output.to_serializable())

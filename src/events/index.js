@@ -6,34 +6,22 @@ const SyncService = require('../services/SyncService');
 
 const createSocketHandler = (socket) => {
   const logger = container.get('logger');
-  const emailService = container.get('emailService');
-  const revenueRepository = container.get('revenueRepository');
-  const categoryRepository = container.get('categoryRepository');
-  const productRepository = container.get('productRepository');
-  const jumpsellerService = container.get('jumpsellerService');
-  const cacheService = container.get('cacheService');
-  const pricingService = container.get('pricingService');
 
   logger.info('a user connected');
 
   const syncService = new SyncService({
+    container,
+    socket,
     logger,
     socket,
-    emailService,
-    productRepository,
-    jumpsellerService,
-    categoryRepository,
-    cacheService,
     filterProductsByCategories: config.features.syncFilterProducts
   });
 
   const eventManager = new EventManager({
+    container,
     socket,
     logger,
-    syncService,
-    revenueRepository,
-    categoryRepository,
-    pricingService
+    syncService
   });
 
   eventManager.connect();

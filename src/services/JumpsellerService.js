@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+const EventTypes = require('../events/eventTypes');
 const request = require('./request');
 const config = require('../config');
 const requestpool = require('../util/requestpool');
@@ -14,26 +16,14 @@ const urls = {
 };
 
 
-class JumpsellerService {
+class JumpsellerService extends EventEmitter {
   constructor(logger, tempProductsRepository, cacheService, pricingService) {
+    super();
     this.logger = logger;
     this.tempProductsRepository = tempProductsRepository;
     this.cacheService = cacheService;
     this.pricingService = pricingService;
-    this.listeners = [];
     this.platformsCount = {};
-  }
-
-  addListener(listener) {
-    this.listeners.push(listener);
-
-    return () => {
-      this.listeners.filter(fn => fn !== listener);
-    };
-  }
-
-  _notify(message) {
-    this.listeners.forEach((listener) => listener(message));
   }
 
   _addPlatformCount(platform) {
@@ -56,7 +46,7 @@ class JumpsellerService {
     for (let i = 1; i <= totalPages; i++) {
       const message = `fetching page ${i} of ${totalPages}`;
       this.logger.debug(message);
-      this._notify(message);
+      this.emit(EventTypes.SYNC_NOTIFY, message);
       const url = `${urls.PRODUCTS}&limit=${PRODUCTS_PER_PAGE}&page=${i}`;
       const results = await requestpool.add(() => request.get(url).json());
       products = products.concat(results.map(prop('product')));
@@ -131,23 +121,44 @@ class JumpsellerService {
 
   _updateProduct(data) {
     const payload = {
-      description: data.description,
-      price: data.price,
-      stock: data.stock
+      product: {
+        description: data.description,
+        price: data.price,
+        stock: data.stock
+      }
     };
 
-    const options = { json: { product: payload } };
+    const options = { json: payload };
     const url = urls.PRODUCTS_UPDATABLE(data.id);
 
     return requestpool
       .add(() => request.put(url, options).json())
+      .catch((err) => {
+        this.emit(EventTypes.SYNC_ERROR, {
+          url: urls.PRODUCTS,
+          operation: 'PUT',
+          payload
+        });
+
+        throw err;
+      })
   }
 
   _addProduct(data) {
-    const options = { json: { product: data } };
+    const payload = { product: data };
+    const options = { json: payload };
 
     return requestpool
-      .add(() => request.post(urls.PRODUCTS, options).json());
+      .add(() => request.post(urls.PRODUCTS, options).json())
+      .catch((err) => {
+        this.emit(EventTypes.SYNC_ERROR, {
+          url: urls.PRODUCTS,
+          operation: 'POST',
+          payload
+        });
+
+        throw err;
+      });
   }
 
   _addCategory(name) {
@@ -164,11 +175,7 @@ class JumpsellerService {
     const url = urls.IMAGES(id);
 
     return requestpool
-      .add(() => request.post(url, options).json())
-      .catch(() => {
-        console.log('url', url);
-        console.log('payload', JSON.stringify(payload));
-      });
+      .add(() => request.post(url, options).json());
   }
 
   async _createCategory(categoryName) {

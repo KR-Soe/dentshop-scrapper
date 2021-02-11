@@ -1,18 +1,14 @@
+const EventTypes = require('./eventTypes');
+
+
 class EventManager {
-  constructor({
-    socket,
-    logger,
-    revenueRepository,
-    categoryRepository,
-    syncService,
-    pricingService
-  }) {
+  constructor({ container, socket, logger, syncService }) {
     this.socket = socket;
     this.logger = logger;
-    this.revenueRepository = revenueRepository;
-    this.categoryRepository = categoryRepository;
+    this.revenueRepository = container.get('revenueRepository');
+    this.categoryRepository = container.get('categoryRepository');
     this.syncService = syncService;
-    this.pricingService = pricingService;
+    this.pricingService = container.get('pricingService');
 
     this._startSync = this._startSync.bind(this);
     this._updateRevenue = this._updateRevenue.bind(this);
@@ -20,9 +16,9 @@ class EventManager {
   }
 
   connect() {
-    this.socket.on('sync:start', this._startSync);
-    this.socket.on('revenue:update', this._updateRevenue);
-    this.socket.on('categories:update', this._updateCategories);
+    this.socket.on(EventTypes.SYNC_START, this._startSync);
+    this.socket.on(EventTypes.REVENUE_UPDATE, this._updateRevenue);
+    this.socket.on(EventTypes.CATEGORY_UPDATE, this._updateCategories);
   }
 
   async _startSync() {
@@ -35,7 +31,9 @@ class EventManager {
     const { revenue } = payload;
     await this.revenueRepository.save(revenue);
     this.pricingService.setRevenue(revenue);
-    this.socket.emit('revenue:notify', { message: 'El valor fue actualizado exitosamente' });
+    this.socket.emit(EventTypes.REVENUE_NOTIFY, {
+      message: 'El valor fue actualizado exitosamente'
+    });
   }
 
   async _updateCategories(payload) {
@@ -44,7 +42,7 @@ class EventManager {
 
     await Promise.all(promises);
     const results = await this.categoryRepository.findAll();
-    this.socket.emit('categories:notify', results);
+    this.socket.emit(EventTypes.CATEGORY_NOTIFY, results);
   }
 }
 

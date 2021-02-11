@@ -8,7 +8,7 @@ class RevenueRepository extends BaseRepository {
   }
 
   getCurrentRevenue() {
-    return this.db.collection(this.collection).find({}).toArray();
+    return this.db.collection(this.collection).findOne({});
   }
 
   save(revenue) {

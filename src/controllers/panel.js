@@ -1,5 +1,5 @@
 const panelController = (categoryRepository, revenueRepository) => async (_, res) => {
-  let [categories, [ revenue ]] = await Promise.all([
+  let [categories, revenue] = await Promise.all([
     categoryRepository.findAll(),
     revenueRepository.getCurrentRevenue()
   ]);

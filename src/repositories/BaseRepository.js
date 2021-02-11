@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const { ObjectId } = require('mongodb');
 const createConnection = require('../util/mongoConnection');
 
@@ -21,8 +22,11 @@ class BaseRepository {
   }
 }
 
+BaseRepository.prototype.emitter = new EventEmitter();
+
 async function injectAsyncDependencies() {
   BaseRepository.prototype.db = await createConnection();
+  BaseRepository.prototype.emitter.emit('dbConnection:injected');
 }
 
 injectAsyncDependencies();

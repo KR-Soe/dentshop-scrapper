@@ -7,12 +7,6 @@ async function main() {
   await waitFor(1000);
 
   const logger = container.get('logger');
-  const emailService = container.get('emailService');
-  const productRepository = container.get('productRepository');
-  const categoryRepository = container.get('categoryRepository');
-  const cacheService = container.get('cacheService');
-  const jumpsellerService = container.get('jumpsellerService');
-
   logger.info('this is the cli configuration %j', config);
 
   const socket = {
@@ -22,11 +16,8 @@ async function main() {
   const syncService = new SyncService({
     logger,
     socket,
-    emailService,
-    productRepository,
-    jumpsellerService,
-    categoryRepository,
-    cacheService
+    container,
+    filterProductsByCategories: config.features.syncFilterProducts
   });
 
   await syncService.startSync();

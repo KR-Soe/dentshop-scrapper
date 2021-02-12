@@ -9,5 +9,7 @@ export MAIL_OWNER=dospuntodos2021@gmail.com
 export MAIL_PASSWORD=dospuntodos20212022
 export MAIL_USER=dospuntodos2021@gmail.com
 export SYNC_FILTER_PRODUCTS=off
+export SYNC_AUTO_UPDATE_PRICES=off
+export SYNC_WITHOUT_CATEGORY=on
 
 ./node_modules/.bin/pm2 start src/server.js

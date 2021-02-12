@@ -15,6 +15,10 @@ const urls = {
   IMAGES: (id) => `https://api.jumpseller.com/v1/products/${id}/images.json?login=${apiLogin}&authtoken=${authToken}`
 };
 
+const normalizeName = str => str.toUpperCase().trim();
+
+const DEFAULT_CATEGORY = 'SIN CATEGORIZAR';
+
 
 class JumpsellerService extends EventEmitter {
   constructor(logger, tempProductsRepository, cacheService, pricingService) {
@@ -76,17 +80,28 @@ class JumpsellerService extends EventEmitter {
       product.revenuePrice :
       this.pricingService.calculatePriceWithRevenue(product.internetPrice);
 
-    if (cache.has(product.title)) {
-      const cachedProduct = cache.get(product.title);
-      cachedProduct.price = newPrice;
+    if (cache.has(normalizeName(product.title))) {
+      const cachedProduct = cache.get(normalizeName(product.title));
       cachedProduct.stock = product.stock;
       cachedProduct.description = product.description;
-      this._addPlatformCount(product.platformSource);
 
+      if (config.features.syncFilterProducts) {
+        cachedProduct.price = newPrice;
+      }
+
+      this._addPlatformCount(product.platformSource);
       return this._updateProduct(cachedProduct);
     }
 
-    const categories = await this.fetchOrAddCategory(product.category);
+    let categoriesFetched;
+
+    if (config.features.withoutCategory) {
+      categoriesFetched = Promise.resolve([ this.cacheService.get('category').get(DEFAULT_CATEGORY) ]);
+    } else {
+      categoriesFetched = this.fetchOrAddCategory(product.category);
+    }
+
+    const categories = await categoriesFetched;
     const productToSave = new Product();
 
     productToSave.name = product.title;
@@ -103,7 +118,7 @@ class JumpsellerService extends EventEmitter {
       this._addPlatformCount(product.platformSource);
       const newProduct = retrievedProduct.product;
       await this.tempProductsRepository.save(newProduct);
-      cache.set(newProduct.name, product);
+      cache.set(normalizeName(newProduct.name), product);
 
       if (product.image) {
         await Promise.all(
@@ -180,19 +195,20 @@ class JumpsellerService extends EventEmitter {
 
   async _createCategory(categoryName) {
     const newCategory = await this._addCategory(categoryName);
-    this.cacheService.get('category').set(categoryName, newCategory.category);
     return newCategory.category;
   }
 
   async _getCategory(categoryName) {
     const cache = this.cacheService.get('category');
 
-    if (cache.has(categoryName)) {
-      return cache.get(categoryName);
+    if (cache.has(normalizeName(categoryName))) {
+      return cache.get(normalizeName(categoryName));
     }
 
-    cache.set(categoryName, this._createCategory(categoryName));
-    return cache.get(categoryName);
+    const newCat = await this._createCategory(categoryName);
+
+    cache.set(normalizeName(categoryName), newCat);
+    return cache.get(normalizeName(categoryName));
   }
 }
 

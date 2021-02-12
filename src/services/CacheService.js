@@ -17,7 +17,7 @@ class CacheService {
 
   cacheCategories(categories) {
     categories.forEach(cat => {
-      const key = cat.category.name;
+      const key = cat.category.name.toUpperCase().trim();
       const value = cat.category;
       value.products = [];
 
@@ -27,7 +27,7 @@ class CacheService {
 
   cacheProducts(products) {
     products.forEach(prod => {
-      const key = prod.name;
+      const key = prod.name.toUpperCase().trim();
       const value = prod;
       this._productsCache.set(key, value);
     });

@@ -20,7 +20,9 @@ const config = {
     }
   },
   features: {
-    syncFilterProducts: (process.env.SYNC_FILTER_PRODUCTS || 'off') === 'on'
+    syncFilterProducts: (process.env.SYNC_FILTER_PRODUCTS || 'off') === 'on',
+    autoUpdatePrices: (process.env.SYNC_AUTO_UPDATE_PRICES || 'off') === 'off',
+    withoutCategory: (process.env.SYNC_WITHOUT_CATEGORY || 'on') === 'on'
   }
 };
 

@@ -85,7 +85,7 @@ class JumpsellerService extends EventEmitter {
       cachedProduct.stock = product.stock;
       cachedProduct.description = product.description;
 
-      if (config.features.syncFilterProducts) {
+      if (config.features.autoUpdatePrices) {
         cachedProduct.price = newPrice;
       }
 

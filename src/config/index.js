@@ -26,4 +26,8 @@ const config = {
   }
 };
 
+console.log('features.syncFilterProducts', config.features.syncFilterProducts);
+console.log('features.autoUpdatePrices', config.features.autoUpdatePrices);
+console.log('features.withoutCategory', config.features.withoutCategory);
+
 module.exports = config;

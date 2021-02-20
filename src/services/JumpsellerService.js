@@ -28,6 +28,11 @@ class JumpsellerService extends EventEmitter {
     this.cacheService = cacheService;
     this.pricingService = pricingService;
     this.platformsCount = {};
+    this._newProducts = [];
+  }
+
+  getNewProducts() {
+    return this._newProducts;
   }
 
   _addPlatformCount(platform) {
@@ -119,6 +124,7 @@ class JumpsellerService extends EventEmitter {
       const newProduct = retrievedProduct.product;
       await this.tempProductsRepository.save(newProduct);
       cache.set(normalizeName(newProduct.name), product);
+      this._newProducts.push(productToSave);
 
       if (product.image) {
         await Promise.all(

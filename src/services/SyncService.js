@@ -42,7 +42,9 @@ class SyncService {
       message: 'tarea terminada, por favor revisa los productos y categorias actualizados'
     });
 
-    await this.emailService.sendEmail(productsToUse, platformsCount);
+    const newProducts = this.jumpsellerService.getNewProducts();
+
+    await this.emailService.sendEmail(newProducts, platformsCount);
     return true;
   }
 

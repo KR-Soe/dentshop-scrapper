@@ -17,10 +17,10 @@ class EmailService {
 
   async sendEmail(products, platformsCount) {
     const newProductsContent = products.reduce((acc, row) => {
-      return acc + `<tr><td>${row.title}</td></tr>`;
+      return acc + `<tr><td>${row.name}</td></tr>`;
     }, '');
 
-    const updatedProductsContent = Object.entries(platformsCount)
+    const productsByPlatformContent = Object.entries(platformsCount)
       .reduce((acc, entry) => {
         const [key, value] = entry;
         return acc + `<tr><td>${key}</td><td>${value}</td><tr>`;
@@ -50,7 +50,7 @@ class EmailService {
             <th>Cantidad de productos procesados</th>
           </thead>
           <tbody>
-            ${updatedProductsContent}
+            ${productsByPlatformContent}
           </tbody>
         </table>
       </div>`

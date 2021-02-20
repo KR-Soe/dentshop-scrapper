@@ -1,4 +1,8 @@
-#!/bin/bash
+./node_modules/.bin/pm2 stop server
+./node_modules/.bin/pm2 delete server
+
+git fetch
+git pull
 
 export NODE_ENV=production
 export API_LOGIN=18e471655ecb112469964198b07e676e

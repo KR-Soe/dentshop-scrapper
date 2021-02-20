@@ -4,13 +4,11 @@ const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const container = require('./util/container');
-const oh = require('./util/objectHolder');
 const app = express();
 
 const viewsPath = path.resolve(__dirname, 'views');
 const logger = container.get('logger');
 
-oh.add('logger', logger);
 app.set('views', viewsPath);
 app.set('view engine', 'njk');
 

@@ -49,7 +49,7 @@ class Clandent(scrapy.Spider):
         output.revenue_price = self.calculator.calculate_price_with_revenue(price)
         output.refer_url = response.url
         output.description = description or ''
-        output.sku = sku
+        output.sku = sku or ''
         output.image = image
         output.stock = stock or 0
         output.created_at = self.now

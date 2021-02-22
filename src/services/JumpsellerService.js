@@ -21,10 +21,9 @@ const DEFAULT_CATEGORY = 'SIN CATEGORIZAR';
 
 
 class JumpsellerService extends EventEmitter {
-  constructor(logger, tempProductsRepository, cacheService, pricingService) {
+  constructor(logger, cacheService, pricingService) {
     super();
     this.logger = logger;
-    this.tempProductsRepository = tempProductsRepository;
     this.cacheService = cacheService;
     this.pricingService = pricingService;
     this.platformsCount = {};
@@ -122,7 +121,6 @@ class JumpsellerService extends EventEmitter {
       const retrievedProduct = await this._addProduct(productToSave.toJSON());
       this._addPlatformCount(product.platformSource);
       const newProduct = retrievedProduct.product;
-      await this.tempProductsRepository.save(newProduct);
       cache.set(normalizeName(newProduct.name), product);
       this._newProducts.push(productToSave);
 

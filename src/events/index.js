@@ -14,7 +14,8 @@ const createSocketHandler = (socket) => {
     socket,
     logger,
     socket,
-    filterProductsByCategories: config.features.syncFilterProducts
+    filterProductsByCategories: config.features.syncFilterProducts,
+    createNewCategories: !config.features.withoutCategory
   });
 
   const eventManager = new EventManager({

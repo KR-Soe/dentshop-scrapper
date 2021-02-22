@@ -22,15 +22,14 @@ container.register('pricingService', () => new PricingService(1.5));
 
 container.register(
   'jumpsellerService',
-  (logger, tempProductsRepository, cacheService, pricingService) => {
+  (logger, cacheService, pricingService) => {
     return new JumpsellerService(
       logger,
-      tempProductsRepository,
       cacheService,
       pricingService
     );
   },
-  ['logger', 'tempProductsRepository', 'cacheService', 'pricingService']
+  ['logger', 'cacheService', 'pricingService']
 );
 
 async function injectAsyncDependencies() {

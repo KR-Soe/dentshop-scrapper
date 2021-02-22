@@ -17,7 +17,8 @@ async function main() {
     logger,
     socket,
     container,
-    filterProductsByCategories: config.features.syncFilterProducts
+    filterProductsByCategories: config.features.syncFilterProducts,
+    createNewCategories: !config.features.withoutCategory
   });
 
   await syncService.startSync();

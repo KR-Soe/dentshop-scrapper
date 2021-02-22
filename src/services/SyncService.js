@@ -2,7 +2,7 @@ const EventTypes = require('../events/eventTypes');
 
 
 class SyncService {
-  constructor({ container, logger, socket, filterProductsByCategories }) {
+  constructor({ container, logger, socket, filterProductsByCategories, createNewCategories }) {
     this.logger = logger;
     this.socket = socket;
     this.emailService = container.get('emailService');
@@ -12,6 +12,7 @@ class SyncService {
     this.cacheService = container.get('cacheService');
     this.errorRepository = container.get('errorRepository');
     this.filterProductsByCategories = filterProductsByCategories || false;
+    this.createNewCategories = createNewCategories;
   }
 
   async startSync() {
@@ -72,6 +73,10 @@ class SyncService {
   }
 
   async saveNewCategories(categoriesToFetchOrCreate) {
+    if (!createNewCategories) {
+      return;
+    }
+
     this.logger.info('getting all categories from products');
     this.socket.emit(EventTypes.SYNC_NOTIFY, {
       message: 'agrupando las categorias de los productos nuevos'

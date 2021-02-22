@@ -73,7 +73,7 @@ class SyncService {
   }
 
   async saveNewCategories(categoriesToFetchOrCreate) {
-    if (!createNewCategories) {
+    if (!this.createNewCategories) {
       return;
     }
 

@@ -26,4 +26,9 @@ app.use(bodyParser.json());
 app.use(require('./middleware/injectLogger')(logger));
 app.use(require('./routes'));
 
+process.on('unhandledRejection', (error) => {
+  logger.error('we are getting an unhandled error %s', error.stack);
+  process.exit(1);
+});
+
 module.exports = app;

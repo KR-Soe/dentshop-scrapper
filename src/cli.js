@@ -25,4 +25,10 @@ async function main() {
   process.exit(0);
 }
 
+process.on('unhandledRejection', (error) => {
+  const logger = container.get('logger');
+  logger.error('we are getting an unhandled error %s', error.stack);
+  process.exit(1);
+});
+
 main();

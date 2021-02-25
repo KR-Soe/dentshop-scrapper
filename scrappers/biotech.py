@@ -45,7 +45,7 @@ class Biotech(scrapy.Spider):
 
     def _parse_list(self, response):
         links = response.css('.card.oe_product_cart a::attr(href)').getall()
-        new_links = [f'https://biotechchile.com{url}' for url in links if url != '#']
+        new_links = [f'{self.base_url}{url}' for url in links if url != '#']
 
         for link in new_links:
             yield Request(link, callback=self._parse_detail)

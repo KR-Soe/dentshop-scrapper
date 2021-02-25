@@ -17,11 +17,9 @@ class Clandent(scrapy.Spider):
         self.calculator = PriceCalculator(self.connection)
         self.now = datetime.now().isoformat()
 
-        with open('./scrappers/inputs/clandent.json', 'r') as file:
-            categories = json.load(file)
-
-        for category in categories:
-            yield Request(category, callback=self._parse_product_list)
+        for page in range(1, 23):
+            url = f'https://www.clandent.cl/page/{page}/?s&post_type=product'
+            yield Request(url, callback=self._parse_product_list)
 
     def _parse_product_list(self, response):
         products = response.css('.woocommerce.main-products > .products > .product')

@@ -16,12 +16,15 @@ class Expressdent(scrapy.Spider):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
         self.now = datetime.now().isoformat()
+        url = 'https://expressdent.cl/'
 
-        with open('./scrappers/inputs/expressdent.json', 'r') as file:
-            start_urls = json.load(file)
+        yield Request(url, callback=self._extract_links)
 
-        for url in start_urls:
-            yield Request(url, callback=self.parse_list)
+    def _extract_links(self, response):
+        links = response.css('.product-categories a::attr(href)').getall()
+
+        for link in links:
+            yield Request(link, callback=self.parse_list)
 
     def parse_list(self, response):
         items = response.css('.products > .entry')

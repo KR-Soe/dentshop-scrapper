@@ -18,26 +18,40 @@ class DentalLaval(scrapy.Spider):
         self.connection = make_mongo_conn()
         self.calculator = PriceCalculator(self.connection)
         self.now = datetime.now().isoformat()
+        self.base_url = 'https://www.dental-laval.cl/'
 
-        start_urls = [
-            "https://www.dental-laval.cl/collections/insumos-dentales",
-            "https://www.dental-laval.cl/collections/equipamiento-dental",
-            "https://www.dental-laval.cl/collections/laboratorio-dental"
-        ]
+        with open('./scrappers/inputs/dental-laval.json', 'r') as file:
+            start_urls = json.load(file)
 
-        for url in start_urls:
-            yield Request(url, callback=self.parse)
+        for category_url in start_urls:
+            yield Request(category_url, callback=self._parse_list)
 
-    def parse(self, response):
-        last_page = int(response.css('.page > a::text').getall()[-1])
+    def _parse_list(self, response):
+        elements = response.css('.pagination > .page > a::text').getall()
 
-        for page in range(last_page):
-            base_url = 'https://www.dental-laval.cl/'
-            item = response.css('.grid__item.small--one-half.medium-up--one-fifth > a[href]::attr(href)').getall()
+        if len(elements) > 0:
+            last_page = int(elements[-1])
 
-            for link in item:
-                url = f'{base_url}{link}'
-                yield Request(url, callback=self._parse_detail)
+            for _ in range(last_page + 1):
+                item_detail_list = self._get_detail_urls(response)
+
+                for item_detail_request in item_detail_list:
+                    yield item_detail_request
+        else:
+            item_detail_list = self._get_detail_urls(response)
+
+            for item_detail_request in item_detail_list:
+                yield item_detail_request
+
+    def _get_detail_urls(self, response):
+        item = response.css('.grid__item.small--one-half.medium-up--one-fifth > a[href]::attr(href)').getall()
+        new_urls = []
+
+        for link in item:
+            url = f'{self.base_url}{link}'
+            new_urls.append(Request(url, callback=self._parse_detail))
+
+        return new_urls
 
     def _parse_detail(self, response):
         data = re.findall('theme.strings =(.+?);\n', response.body.decode('utf-8'), re.S)
@@ -54,7 +68,7 @@ class DentalLaval(scrapy.Spider):
         sku = response.css('#ProductSelect-product-template > option::attr(value)').get()
         category = response.css('.h1.return-link::text').extract()[1].strip().split('Volver a')[1]
         image_url = response.css('#ProductPhotoImg-product-template::attr(src)').get()
-        image = f'https://{image_url}'
+        image = f'https://{image_url}'.replace('////', '//')
         description = response.css('.rte.product-single__description::text').get(default='')
 
         output = Product()

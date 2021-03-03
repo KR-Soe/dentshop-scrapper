@@ -1,115 +1,156 @@
+const pino = require('pino');
 const makeMongoConn = require('./utils/mongoConn');
 const makeNewBrowser = require('./utils/makeBrowser');
 const parseNumber = require('./utils/numberParser');
 const container = require('../src/util/container');
 
+const logger = pino();
+const pricingService = container.get('pricingService');
+
 const main = async () => {
-  this.pricingService = container.get('pricingService');
   const browser = await makeNewBrowser();
-  const page = await browser.newPage();
-  const baseUrl = 'https://biotechchile.cl';
-  console.log('going to...', baseUrl);
-  await page.goto(baseUrl);
-  const categoryLinks = await fetchCategories(page);
+  const baseURL = 'https://biotechchile.cl';
 
-  for (let i = 0; i < categoryLinks.length; i++) {
-    const url = `${baseUrl}${categoryLinks[i]}`;
-    await page.goto(url)
-    const { totalPages, category } = await fetchCatAndQuant(page);
+  logger.info('going to ... %s', baseURL);
 
-    for (let j = 0; j <= totalPages; j++){
-      const plp = `${url}/page/${j+1}`;
-      await page.goto(plp);
-      const pdpItems = await getProductsLink(page);
+  const categoryLinks = await fetchCategories(browser, baseURL);
+  console.log('category links', categoryLinks);
 
-      for(let k = 0; k <= pdpItems.length; k++){
-        const pdpUrl = `${baseUrl}${pdpItems[k]}`;
-        console.log('scrapping', pdpUrl);
-        await page.goto(pdpUrl);
-        const results = await getInfo(page, category);
+  do {
+    const link = categoryLinks.shift();
+    const url = `${baseURL}${link}`;
+    logger.info('url created -> %s', url);
+    const { totalPages, category } = await fetchCatAndQuantity(browser, url);
+
+    for (let i = 0; i <= totalPages; i++) {
+      const pageNumber = i + 1;
+      const plp = `${url}/page/${pageNumber}`;
+      const pdpItems = await getProductsLink(browser, plp);
+
+      while (pdpItems.length > 0) {
+        const pdpSection = pdpItems.shift();
+        const pdpUrl = `${baseURL}${pdpSection}`;
+        const results = await getInfo(browser, pdpUrl, category);
+
+        if (!results.title) {
+          continue;
+        }
 
         await insertDB(results);
       }
     }
-  }
-  console.log('TARIAMOS LISTEILOR')
-  page.close();
+  } while (categoryLinks.length > 0);
+
   browser.close();
 };
 
-const getProductsLink = async (page) => {
-  return page.evaluate(() => {
-    return Array.from(document.querySelectorAll('.d-block.h-100')).map(href => href.getAttribute('href'));
+const getProductsLink = async (browser, url) => {
+  const page = await browser.newPage();
+  await page.goto(url);
+
+  const productsLink = await page.evaluate(() => {
+    return Array.from(document.querySelectorAll('.d-block.h-100'))
+      .map(href => href.getAttribute('href'));
   });
+
+  await page.close();
+  return productsLink;
 };
 
-const fetchCatAndQuant = async (page) => {
-  const test = await page.evaluate(() => {
+const fetchCatAndQuantity = async (browser, url) => {
+  const page = await browser.newPage();
+  await page.goto(url);
+
+  const totalPagesAndCategory = await page.evaluate(() => {
     const lastPage = Array.from(
       document.querySelectorAll('.products_pager.form-inline.flex-md-nowrap .page-item'))
-      .slice(1,5).map(content => content.textContent.trim());
-    const category = window.location.href.split('/').slice(-1)[0].split('-')[0]
+      .slice(1,5)
+      .map(content => content.textContent.trim());
+
+    const category = window.location.href.split('/').slice(-1)[0].split('-')[0];
+
     return {
       totalPages: Number.parseInt(lastPage.slice(-1)[0]),
       category
     };
   });
-  return test;
+
+  await page.close();
+  return totalPagesAndCategory;
 };
 
-const fetchCategories = async (page) => {
-  return page.evaluate(() => {
+const fetchCategories = async (browser, url) => {
+  const page = await browser.newPage();
+  await page.goto(url);
+
+  const results = await page.evaluate(() => {
     return Array.from(
         document.querySelectorAll('.container-fluid.fondo_dos.header-desktop .menu-item-wrap a')
       ).map(href => href.getAttribute('href'));
   });
+
+  await page.close();
+  return results;
 };
 
-const getInfo = async (page, category) => {
-  const data = await page.evaluate(category => {
-    const title = document.querySelector('#product_details > h1').textContent;
-    const price = document.querySelector('.oe_price > .oe_currency_value').textContent;
-    const image = document.querySelector('.carousel.slide img').getAttribute('src');
-    const stock = document.querySelector('.availability_messages.o_not_editable > div').textContent.trim();
-    const date = new Date().toISOString();
+const getInfo = async (browser, url, category) => {
+  const page = await browser.newPage();
+  page.on('console', (message) => {
+    if (message.text().startsWith('https')) {
+      logger.error('error on page %s', message.text());
+    }
+  });
 
-    return {
-      title: title,
-      price: price,
-      refer_url: window.location.href,
-      image: image,
-      brand: '',
-      description: '',
-      sku: '',
-      platform_source: 'biotech',
-      stock: stock,
-      created_at: date,
-      category
-    };
-  }, category);
+  logger.info('inspecting %s', url);
+
+  await page.goto(url);
+  await page.waitForTimeout(3000);
+
+  const data = await page.evaluate((category, url) => {
+    try {
+      const title = document.querySelector('#product_details > h1').textContent;
+      const price = document.querySelector('.oe_price > .oe_currency_value').textContent;
+      const image = document.querySelector('.carousel.slide img').getAttribute('src');
+      const stock = document.querySelector('.availability_messages.o_not_editable > div').textContent.trim();
+      const date = new Date().toISOString();
+
+      return {
+        title: title,
+        price: price,
+        refer_url: url,
+        image: image,
+        brand: '',
+        description: '',
+        sku: '',
+        platform_source: 'biotech',
+        stock: stock,
+        created_at: date,
+        category
+      };
+    } catch (err) {
+      console.error(url);
+      return {};
+    }
+  }, category, page.url());
 
   data.price = parseNumber(data.price);
   data.stock = parseNumber(data.stock);
-  data.revenue_price = this.pricingService.calculatePriceWithRevenue(data.price);
+  data.revenue_price = pricingService.calculatePriceWithRevenue(data.price);
+
+  await page.close();
   return data;
 };
 
-const insertDB = async (registers) => {
+const insertDB = async (entity) => {
+  logger.info('inserting entity %j', entity);
   const connection = await makeMongoConn();
   const db = connection.db('dentshop');
   const collection = db.collection('biotech');
 
-  return new Promise((resolve, reject) => {
-    console.log('trying to insert into the DB');
-    collection.insertOne(registers, function(err, result) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      console.log('done');
-      resolve(result);
-    });
-  });
+  await collection.insertOne(entity);
+  await connection.close();
+
+  return Promise.resolve();
 };
 
 main();

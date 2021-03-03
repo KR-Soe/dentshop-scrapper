@@ -115,17 +115,17 @@ const getInfo = async (browser, url, category) => {
       const date = new Date().toISOString();
 
       return {
-        title: title,
-        price: price,
-        refer_url: url,
-        image: image,
-        brand: '',
-        description: '',
+        title,
+        stock,
+        category,
+        image,
         sku: '',
-        platform_source: 'biotech',
-        stock: stock,
-        created_at: date,
-        category
+        brand: '',
+        platformSource: 'biotech',
+        description: '',
+        createdAt: date,
+        referUrl: url,
+        internetPrice: price,
       };
     } catch (err) {
       console.error(url);
@@ -133,9 +133,9 @@ const getInfo = async (browser, url, category) => {
     }
   }, category, page.url());
 
-  data.price = parseNumber(data.price);
+  data.price = parseNumber(data.internetPrice);
   data.stock = parseNumber(data.stock);
-  data.revenue_price = pricingService.calculatePriceWithRevenue(data.price);
+  data.revenuePrice = pricingService.calculatePriceWithRevenue(data.internetPrice);
 
   await page.close();
   return data;

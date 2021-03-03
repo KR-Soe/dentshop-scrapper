@@ -145,7 +145,7 @@ const insertDB = async (entity) => {
   logger.info('inserting entity %j', entity);
   const connection = await makeMongoConn();
   const db = connection.db('dentshop');
-  const collection = db.collection('biotech');
+  const collection = db.collection('products');
 
   await collection.insertOne(entity);
   await connection.close();

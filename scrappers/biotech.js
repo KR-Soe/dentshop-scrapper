@@ -133,9 +133,11 @@ const getInfo = async (browser, url, category) => {
     }
   }, category, page.url());
 
-  data.price = parseNumber(data.internetPrice);
-  data.stock = parseNumber(data.stock);
-  data.revenuePrice = pricingService.calculatePriceWithRevenue(data.internetPrice);
+  if (data.platformSource) {
+    data.internetPrice = parseNumber(data.internetPrice);
+    data.revenuePrice = pricingService.calculatePriceWithRevenue(data.internetPrice);
+    data.stock = parseNumber(data.stock);
+  }
 
   await page.close();
   return data;
